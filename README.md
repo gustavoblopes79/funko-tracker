@@ -14,22 +14,54 @@
   &nbsp;
   <img src="docs/wishlist.png" width="200" alt="Wishlist com nota de desejo em estrelas">
   &nbsp;
-  <img src="docs/dashboard.png" width="200" alt="Dashboard com valor pago, valor estimado e valorização">
+  <img src="docs/dashboard.png" width="200" alt="Dashboard com a coleção dividida por grupo e por série">
   &nbsp;
-  <img src="docs/formulario.png" width="200" alt="Formulário de edição em bottom sheet">
+  <img src="docs/formulario.png" width="200" alt="Formulário com os botões Colar foto e Escolher da fototeca">
+  &nbsp;
+  <img src="docs/series.png" width="200" alt="Campo Série sugerindo suas séries e séries do catálogo ao digitar">
 </p>
 
 ## O que o app faz
 
 - **Coleção:** cada Funko vira um card no formato da caixa do Pop, com foto, número, série, categoria e quanto você pagou e quanto ele vale.
 - **Wishlist:** anote os Funkos que você quer e dê uma nota de desejo de 1 a 5 estrelas. Ordene por “Maior desejo” para ver primeiro o que você mais quer. Quando comprar, mova para a coleção e informe o valor pago.
-- **Busca e filtro:** encontre pelo nome, pela série ou pelo número, e filtre por categoria (Chase, GITD, Flocked, Diamond e outras).
-- **Dashboard:** total pago, valor estimado, valorização da estante e quantos Funkos você tem de cada categoria.
-- **Fotos:** tire uma foto ou escolha da galeria. O app reduz a imagem para economizar espaço.
+- **Séries e grupos:** o app lembra as séries que você usa, sugere ao digitar e organiza tudo em grupos (anime e mangá, filmes, séries de TV, games e outros). Veja mais em [Séries e grupos](#séries-e-grupos).
+- **Busca e filtros:** encontre pelo nome, pela série ou pelo número, filtre por categoria (Chase, GITD, Flocked, Diamond e outras), por grupo e por série, ou agrupe a lista por série.
+- **Dashboard:** total pago, valor estimado, valorização da estante e quantos Funkos você tem por categoria, por grupo e por série.
+- **Fotos:** cole uma foto copiada ou escolha da fototeca. O app reduz a imagem para economizar espaço. Veja [Como adicionar fotos](#como-adicionar-fotos).
 - **Backup:** exporte um arquivo JSON pelo menu de compartilhar do iPhone e importe quando precisar.
 - **Funciona offline** depois da primeira abertura, sem login e sem servidor. Os dados ficam só no seu aparelho.
 
 Feito com HTML, CSS e JavaScript puro, sem frameworks e sem bibliotecas externas. Todos os caminhos são relativos (`./`), então o app funciona em subpastas, como `usuario.github.io/funko-tracker/`.
+
+## Como adicionar fotos
+
+No formulário do Funko, o campo **Foto** tem duas opções:
+
+- **Escolher da fototeca:** abre a fototeca ou a câmera do iPhone.
+- **Colar foto:** usa a imagem que você copiou em outro app, como Safari, Instagram ou Fotos (toque e segure a imagem e escolha **Copiar**).
+
+Também dá para colar direto, com o formulário aberto:
+
+- **No computador:** aperte **⌘V** (Mac) ou **Ctrl+V** (Windows).
+- **No iPhone, se o Safari não liberar o botão Colar foto:** o app mostra uma área rosa. Toque e segure nela e escolha **Colar**.
+
+Se não houver imagem copiada, o app avisa: “Não há imagem copiada. Copie uma foto e tente de novo.” Toda foto, colada ou escolhida, passa pelo mesmo ajuste: no máximo 800 px no maior lado, em JPEG.
+
+## Séries e grupos
+
+- **Sugestões ao digitar:** no campo **Série**, a lista mostra primeiro as séries que você já usa (as mais usadas no topo) e depois as sugestões do catálogo do app, com cerca de 70 séries populares, como Naruto, One Piece, Star Wars, Harry Potter, Stranger Things e Super Mario.
+- **Série nova:** se o nome não existir, toque em **Adicionar “nome” como nova série** e escolha o grupo. Se não escolher, ela entra em **Outros**.
+- **Sem duplicatas:** maiúsculas, acentos e espaços extras não criam série repetida. “boku no hero” e “Boku no Hero” são a mesma série.
+- **Grupos:** Anime e mangá, Filmes, Séries de TV, Games, Quadrinhos, Desenhos, Música, Esportes e Outros.
+- **Gerenciar séries:** em **Dashboard → Por série → Gerenciar séries**, você pode:
+  - renomear (os Funkos que usam a série são atualizados na coleção e na wishlist);
+  - mudar de grupo;
+  - mesclar duas séries;
+  - excluir uma série que nenhum Funko usa.
+- **Nas listas:** filtre por grupo e por série, ou toque em **Agrupar por série** para ver os Funkos separados em seções.
+
+Na primeira vez que esta versão abre, o app monta o registro de séries a partir das séries que seus Funkos já têm, sem mudar nenhum Funko. Séries conhecidas do catálogo herdam o grupo certo; as outras entram em **Outros**.
 
 ## Arquivos
 
@@ -103,7 +135,7 @@ O service worker guarda os arquivos em cache. Para o iPhone baixar uma versão n
 1. Altere os arquivos.
 2. Em `service-worker.js`, aumente a versão do cache:
    ```js
-   const CACHE_NAME = 'funko-v4'; // era funko-v3
+   const CACHE_NAME = 'funko-v5'; // era funko-v4
    ```
 3. Se criar arquivos novos, inclua cada um na lista `ARQUIVOS` do mesmo arquivo, sempre com `./` na frente.
 4. Faça commit e push.
@@ -121,6 +153,8 @@ Para não perder nada:
 2. Toque em **Exportar backup (JSON)**.
 3. No menu de compartilhar, escolha **Salvar em Arquivos** e guarde no **iCloud Drive**.
 
-Para restaurar, toque em **Importar backup** e escolha o arquivo `.json`. O app mostra quantos Funkos o backup tem e pede confirmação antes de substituir os dados atuais.
+Para restaurar, toque em **Importar backup** e escolha o arquivo `.json`. O app mostra quantos Funkos e séries o backup tem e pede confirmação antes de substituir os dados atuais.
+
+O backup exportado agora é a **versão 2**: além da coleção e da wishlist, ele traz o registro de séries (`series`). Backups antigos (**versão 1**, sem séries) continuam funcionando: na importação, o app monta as séries a partir dos Funkos.
 
 As fotos ficam dentro do backup. O navegador costuma limitar o `localStorage` a cerca de 5 MB. Cada foto é reduzida para no máximo 800 px e costuma ocupar algo entre 50 e 150 KB, o que dá algumas dezenas de Funkos com foto. Se o espaço acabar, o app avisa e não perde o que já estava salvo.
