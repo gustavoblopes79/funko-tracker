@@ -1,10 +1,35 @@
-# Funko Tracker
+<p align="center">
+  <img src="icons/icon-192.png" width="96" height="96" alt="Ícone do Funko Tracker">
+</p>
 
-Catálogo de Funko Pops para iPhone, feito como PWA. Organize sua coleção e sua wishlist, acompanhe quanto pagou e quanto a estante vale, e use tudo offline.
+<h1 align="center">Funko Tracker</h1>
 
-- Sem backend, sem login e sem dependências: HTML, CSS e JavaScript puro.
-- Os dados ficam no próprio aparelho (`localStorage`).
-- Todos os caminhos são relativos (`./`), então o app funciona em subpastas, como `usuario.github.io/funko-tracker/`.
+<p align="center">
+  Catálogo de Funko Pops para iPhone: coleção, wishlist e valor da estante, tudo offline.<br>
+  <a href="https://gustavoblopes79.github.io/funko-tracker/"><strong>Abrir o app</strong></a>
+</p>
+
+<p align="center">
+  <img src="docs/colecao.png" width="200" alt="Coleção em grade com cards no formato de caixa de Funko Pop">
+  &nbsp;
+  <img src="docs/wishlist.png" width="200" alt="Wishlist com busca e filtro por categoria">
+  &nbsp;
+  <img src="docs/dashboard.png" width="200" alt="Dashboard com valor pago, valor estimado e valorização">
+  &nbsp;
+  <img src="docs/formulario.png" width="200" alt="Formulário de edição em bottom sheet">
+</p>
+
+## O que o app faz
+
+- **Coleção:** cada Funko vira um card no formato da caixa do Pop, com foto, número, série, categoria e quanto você pagou e quanto ele vale.
+- **Wishlist:** anote os Funkos que você quer. Quando comprar, mova para a coleção e informe o valor pago.
+- **Busca e filtro:** encontre pelo nome, pela série ou pelo número, e filtre por categoria (Chase, GITD, Flocked, Diamond e outras).
+- **Dashboard:** total pago, valor estimado, valorização da estante e quantos Funkos você tem de cada categoria.
+- **Fotos:** tire uma foto ou escolha da galeria. O app reduz a imagem para economizar espaço.
+- **Backup:** exporte um arquivo JSON pelo menu de compartilhar do iPhone e importe quando precisar.
+- **Funciona offline** depois da primeira abertura, sem login e sem servidor. Os dados ficam só no seu aparelho.
+
+Feito com HTML, CSS e JavaScript puro, sem frameworks e sem bibliotecas externas. Todos os caminhos são relativos (`./`), então o app funciona em subpastas, como `usuario.github.io/funko-tracker/`.
 
 ## Arquivos
 
@@ -14,6 +39,7 @@ funko-tracker/
 ├── manifest.json           nome, cores e ícones do app instalado
 ├── service-worker.js       cache offline (cache-first)
 ├── README.md
+├── docs/                   capturas de tela usadas neste README
 ├── tools/gerar-icones.js   gera os PNGs dos ícones (Node, sem dependências)
 └── icons/
     ├── icon-192.png
@@ -54,12 +80,12 @@ Para testar no iPhone pela rede de casa, use o IP do computador (`http://192.168
    git add .
    git commit -m "Funko Tracker"
    git branch -M main
-   git remote add origin https://github.com/SEU-USUARIO/funko-tracker.git
+   git remote add origin https://github.com/gustavoblopes79/funko-tracker.git
    git push -u origin main
    ```
 3. No repositório, abra **Settings → Pages**.
 4. Em **Build and deployment**, escolha **Source: Deploy from a branch**, branch **main** e pasta **/ (root)**. Clique em **Save**.
-5. Espere de 1 a 2 minutos e acesse `https://SEU-USUARIO.github.io/funko-tracker/`.
+5. Espere de 1 a 2 minutos e acesse `https://gustavoblopes79.github.io/funko-tracker/`.
 
 ## 3. Instalar no iPhone
 
