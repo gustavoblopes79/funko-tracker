@@ -695,6 +695,57 @@ select.entrada {
 .nota-estrela:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 10px; }
 .nota-texto { color: var(--text); font-weight: 600; font-size: 15px; }
 
+.combo-lista {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 6px;
+  background: var(--card);
+  border: 1px solid #333;
+  border-radius: 12px;
+  max-height: 288px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.combo-titulo { padding: 8px 10px 4px; font-size: 13px; font-weight: 600; color: var(--muted-card); }
+.combo-opcao {
+  min-height: 48px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.combo-opcao .combo-nome { overflow-wrap: anywhere; }
+.combo-opcao[aria-selected="true"] { background: #353535; box-shadow: inset 3px 0 0 var(--accent); }
+@media (hover: hover) { .combo-opcao:hover { background: #303030; } }
+.combo-opcao-nova { justify-content: flex-start; color: var(--accent); font-weight: 700; }
+.combo-opcao-nova svg { width: 18px; height: 18px; flex: none; }
+.combo-novo {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px dashed #444;
+  border-radius: 12px;
+  background: var(--bg);
+}
+.combo-novo label { font-size: 14px; font-weight: 600; color: #cfcfcf; }
+.combo-novo p { margin: 0; font-size: 14px; color: var(--muted); }
+.tag-grupo {
+  flex: none;
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--grp-fundo, #2e2e2e);
+  color: var(--grp, #cfcfcf);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .form-botoes { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; margin-top: 4px; }
 
 /* =========================================================
@@ -791,13 +842,54 @@ select.entrada {
     { nome: 'Chrome', cor: '#e2e8f0' },
   ];
   const MAPA_CATEGORIAS = new Map(CATEGORIAS.map((c) => [c.nome, c]));
-  const CHAVES = { colecao: 'funko_colecao', wishlist: 'funko_wishlist' };
+  const CHAVES = { colecao: 'funko_colecao', wishlist: 'funko_wishlist', series: 'funko_series' };
   const CHAVE_ULTIMO_BACKUP = 'funko_ultimo_backup';
   const TIPOS = ['colecao', 'wishlist'];
   const FOTO_LADO_MAX = 800;
   const FOTO_QUALIDADE = 0.7;
   const TOQUE_LONGO_MS = 500;
   const DESEJO_PADRAO = 3;
+  const SERIE_MAX = 120;
+  const GRUPO_PADRAO = 'Outros';
+  const GRUPOS = [
+    { nome: 'Anime e mangá', cor: '#fb7185' },
+    { nome: 'Filmes', cor: '#60a5fa' },
+    { nome: 'Séries de TV', cor: '#c084fc' },
+    { nome: 'Games', cor: '#34d399' },
+    { nome: 'Quadrinhos', cor: '#facc15' },
+    { nome: 'Desenhos', cor: '#fdba74' },
+    { nome: 'Música', cor: '#a5f3fc' },
+    { nome: 'Esportes', cor: '#a3e635' },
+    { nome: 'Outros', cor: '#a8a29e' },
+  ];
+  const MAPA_GRUPOS = new Map(GRUPOS.map((g) => [g.nome, g]));
+
+  // Sugestões embutidas. O registro do próprio usuário fica em funko_series.
+  const CATALOGO_SERIES = [
+    ['Boku no Hero Academia', 'Anime e mangá'], ['Naruto', 'Anime e mangá'], ['One Piece', 'Anime e mangá'],
+    ['Dragon Ball', 'Anime e mangá'], ['Demon Slayer', 'Anime e mangá'], ['Jujutsu Kaisen', 'Anime e mangá'],
+    ['Attack on Titan', 'Anime e mangá'], ['Death Note', 'Anime e mangá'], ['Hunter x Hunter', 'Anime e mangá'],
+    ['Chainsaw Man', 'Anime e mangá'], ['Spy x Family', 'Anime e mangá'], ['Sailor Moon', 'Anime e mangá'],
+    ['Bleach', 'Anime e mangá'], ['Cowboy Bebop', 'Anime e mangá'], ['Os Cavaleiros do Zodíaco', 'Anime e mangá'],
+    ['Star Wars', 'Filmes'], ['Harry Potter', 'Filmes'], ['O Senhor dos Anéis', 'Filmes'],
+    ['Jurassic Park', 'Filmes'], ['De Volta para o Futuro', 'Filmes'], ['Toy Story', 'Filmes'],
+    ['Matrix', 'Filmes'], ['Os Caça-Fantasmas', 'Filmes'], ['Indiana Jones', 'Filmes'],
+    ['Studio Ghibli', 'Filmes'], ['Disney', 'Filmes'], ['Piratas do Caribe', 'Filmes'],
+    ['Stranger Things', 'Séries de TV'], ['The Office', 'Séries de TV'], ['Game of Thrones', 'Séries de TV'],
+    ['Friends', 'Séries de TV'], ['The Mandalorian', 'Séries de TV'], ['Wednesday', 'Séries de TV'],
+    ['Breaking Bad', 'Séries de TV'], ['The Walking Dead', 'Séries de TV'], ['La Casa de Papel', 'Séries de TV'],
+    ['Doctor Who', 'Séries de TV'], ['The Big Bang Theory', 'Séries de TV'], ['Supernatural', 'Séries de TV'],
+    ['Pokémon', 'Games'], ['Fortnite', 'Games'], ['Sonic', 'Games'], ['Super Mario', 'Games'],
+    ['The Legend of Zelda', 'Games'], ['Minecraft', 'Games'], ["Five Nights at Freddy's", 'Games'],
+    ['Halo', 'Games'], ['God of War', 'Games'], ['Overwatch', 'Games'], ['League of Legends', 'Games'],
+    ['Marvel', 'Quadrinhos'], ['DC', 'Quadrinhos'], ['Batman', 'Quadrinhos'], ['Spider-Man', 'Quadrinhos'],
+    ['X-Men', 'Quadrinhos'], ['Turma da Mônica', 'Quadrinhos'],
+    ['Os Simpsons', 'Desenhos'], ['Bob Esponja', 'Desenhos'], ['Hora de Aventura', 'Desenhos'],
+    ['Scooby-Doo', 'Desenhos'], ['Rick and Morty', 'Desenhos'], ['Looney Tunes', 'Desenhos'],
+    ['Avatar: A Lenda de Aang', 'Desenhos'],
+    ['BTS', 'Música'], ['KISS', 'Música'], ['Queen', 'Música'], ['The Beatles', 'Música'], ['Metallica', 'Música'],
+    ['NBA', 'Esportes'], ['NFL', 'Esportes'], ['WWE', 'Esportes'], ['Futebol', 'Esportes'],
+  ].map(([nome, grupo]) => ({ nome, grupo }));
   const DESEJO_TEXTOS = ['', 'Seria legal ter', 'Gostaria de ter', 'Quero', 'Quero muito', 'Preciso ter'];
 
   const ROTULOS = {
@@ -912,6 +1004,20 @@ select.entrada {
 
     normalizarBusca(texto) {
       return String(texto || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    },
+
+    // Chave de comparação de séries: sem maiúsculas, acentos nem espaços extras.
+    chaveSerie(nome) {
+      return Util.normalizarBusca(nome).replace(/\s+/g, ' ');
+    },
+
+    limparSerie(nome) {
+      return String(nome || '').replace(/\s+/g, ' ').trim().slice(0, SERIE_MAX);
+    },
+
+    varsGrupo(nome) {
+      const cor = (MAPA_GRUPOS.get(nome) || MAPA_GRUPOS.get(GRUPO_PADRAO)).cor;
+      return { '--grp': cor, '--grp-fundo': Util.hexParaRgba(cor, 0.16) };
     },
 
     hexParaRgba(hex, alfa) {
@@ -1093,17 +1199,131 @@ select.entrada {
       return { colecao, wishlist };
     },
 
+    normalizarSerie(bruto, chaves, ids) {
+      if (!bruto || typeof bruto !== 'object' || Array.isArray(bruto)) return null;
+      const nome = Util.limparSerie(typeof bruto.nome === 'string' ? bruto.nome : '');
+      const chave = Util.chaveSerie(nome);
+      if (!chave || chaves.has(chave)) return null;
+      chaves.add(chave);
+      let id = Storage.texto(bruto.id, 64);
+      if (!id || ids.has(id)) id = Util.gerarId();
+      ids.add(id);
+      const data = new Date(bruto.dataCriacao);
+      return {
+        id,
+        nome,
+        grupo: MAPA_GRUPOS.has(bruto.grupo) ? bruto.grupo : GRUPO_PADRAO,
+        dataCriacao: Number.isNaN(data.getTime()) ? new Date().toISOString() : data.toISOString(),
+      };
+    },
+
+    normalizarSeries(brutas) {
+      const chaves = new Set();
+      const ids = new Set();
+      return (Array.isArray(brutas) ? brutas : []).map((b) => Storage.normalizarSerie(b, chaves, ids)).filter(Boolean);
+    },
+
+    // Toda série usada por algum Funko entra no registro, sem alterar os Funkos.
+    completarSeries(series, colecao, wishlist) {
+      const chaves = new Set(series.map((x) => Util.chaveSerie(x.nome)));
+      const novas = [];
+      for (const item of [...colecao, ...wishlist]) {
+        const nome = Util.limparSerie(item.serie);
+        const chave = Util.chaveSerie(nome);
+        if (!chave || chaves.has(chave)) continue;
+        chaves.add(chave);
+        const doCatalogo = Series.doCatalogo(nome);
+        novas.push({
+          id: Util.gerarId(),
+          nome,
+          grupo: doCatalogo ? doCatalogo.grupo : GRUPO_PADRAO,
+          dataCriacao: item.dataCriacao,
+        });
+      }
+      return novas.length ? [...series, ...novas] : series;
+    },
+
     carregarTudo() {
-      return Storage.normalizarListas(Storage.lerBruto(CHAVES.colecao), Storage.lerBruto(CHAVES.wishlist));
+      const { colecao, wishlist } = Storage.normalizarListas(Storage.lerBruto(CHAVES.colecao), Storage.lerBruto(CHAVES.wishlist));
+      const brutas = Storage.lerBruto(CHAVES.series);
+      const series = Storage.completarSeries(Storage.normalizarSeries(brutas), colecao, wishlist);
+      const gravarSeries = Storage.lerTexto(CHAVES.series) === null || series.length !== brutas.length;
+      return { colecao, wishlist, series, gravarSeries };
     },
   };
 
   /* =======================================================
      ESTADO
      ======================================================= */
+  const Series = {
+    catalogoComChave: null,
+
+    catalogo() {
+      if (!Series.catalogoComChave) Series.catalogoComChave = CATALOGO_SERIES.map((x) => ({ ...x, chave: Util.chaveSerie(x.nome) }));
+      return Series.catalogoComChave;
+    },
+
+    doCatalogo(nome) {
+      const chave = Util.chaveSerie(nome);
+      return chave ? Series.catalogo().find((x) => x.chave === chave) || null : null;
+    },
+
+    doRegistro(nome, series = Estado.listas.series) {
+      const chave = Util.chaveSerie(nome);
+      return chave ? series.find((x) => Util.chaveSerie(x.nome) === chave) || null : null;
+    },
+
+    porId(id) {
+      return Estado.listas.series.find((x) => x.id === id) || null;
+    },
+
+    grupoDe(nome) {
+      const registrada = Series.doRegistro(nome);
+      if (registrada) return registrada.grupo;
+      const doCatalogo = Series.doCatalogo(nome);
+      return doCatalogo ? doCatalogo.grupo : GRUPO_PADRAO;
+    },
+
+    // Quantos Funkos usam cada série (chave normalizada → quantidade).
+    uso(tipos = TIPOS) {
+      const mapa = new Map();
+      for (const tipo of tipos) {
+        for (const item of Estado.listas[tipo]) {
+          const chave = Util.chaveSerie(item.serie);
+          if (chave) mapa.set(chave, (mapa.get(chave) || 0) + 1);
+        }
+      }
+      return mapa;
+    },
+
+    contar(nome) {
+      return Series.uso().get(Util.chaveSerie(nome)) || 0;
+    },
+
+    porNome(a, b) {
+      return a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' });
+    },
+
+    // Devolve o registro com a série incluída (se ainda não existir) e a grafia a gravar no Funko.
+    incluir(series, nome, grupo) {
+      const limpo = Util.limparSerie(nome);
+      if (!limpo) return { series, nome: '' };
+      const existente = Series.doRegistro(limpo, series);
+      if (existente) return { series, nome: existente.nome };
+      const doCatalogo = Series.doCatalogo(limpo);
+      const nova = {
+        id: Util.gerarId(),
+        nome: doCatalogo ? doCatalogo.nome : limpo,
+        grupo: doCatalogo ? doCatalogo.grupo : (MAPA_GRUPOS.has(grupo) ? grupo : GRUPO_PADRAO),
+        dataCriacao: new Date().toISOString(),
+      };
+      return { series: [...series, nova], nome: nova.nome };
+    },
+  };
+
   const Estado = {
     aba: 'colecao',
-    listas: { colecao: [], wishlist: [] },
+    listas: { colecao: [], wishlist: [], series: [] },
     filtros: {
       colecao: { busca: '', categoria: null },
       wishlist: { busca: '', categoria: null, ordem: 'recentes' },
@@ -1116,7 +1336,7 @@ select.entrada {
     // Grava no disco antes de aceitar a mudança; se falhar, o estado em memória continua igual.
     persistir(novas) {
       const gravadas = [];
-      for (const tipo of TIPOS) {
+      for (const tipo of Object.keys(CHAVES)) {
         if (!novas[tipo]) continue;
         const r = Storage.gravar(CHAVES[tipo], novas[tipo]);
         if (!r.ok) {
@@ -1133,22 +1353,29 @@ select.entrada {
       return true;
     },
 
-    adicionar(tipo, dados) {
+    adicionar(tipo, dados, grupoSerie) {
+      const { series, nome: serie } = Series.incluir(Estado.listas.series, dados.serie, grupoSerie);
       const item = {
         id: Util.gerarId(),
         ...dados,
+        serie,
         valorPago: tipo === 'colecao' ? dados.valorPago : null,
         valorEstimado: tipo === 'colecao' ? dados.valorEstimado : null,
         desejo: tipo === 'wishlist' ? dados.desejo : null,
         dataCriacao: new Date().toISOString(),
         tipo,
       };
-      return Estado.persistir({ [tipo]: [item, ...Estado.listas[tipo]] });
+      const novas = { [tipo]: [item, ...Estado.listas[tipo]] };
+      if (series !== Estado.listas.series) novas.series = series;
+      return Estado.persistir(novas);
     },
 
-    atualizar(tipo, id, dados) {
-      const lista = Estado.listas[tipo].map((i) => (i.id === id ? { ...i, ...dados } : i));
-      return Estado.persistir({ [tipo]: lista });
+    atualizar(tipo, id, dados, grupoSerie) {
+      const { series, nome: serie } = Series.incluir(Estado.listas.series, dados.serie, grupoSerie);
+      const lista = Estado.listas[tipo].map((i) => (i.id === id ? { ...i, ...dados, serie } : i));
+      const novas = { [tipo]: lista };
+      if (series !== Estado.listas.series) novas.series = series;
+      return Estado.persistir(novas);
     },
 
     excluir(tipo, id) {
@@ -1531,7 +1758,12 @@ select.entrada {
       };
 
       const teclado = (e) => {
-        if (e.key === 'Escape') { e.preventDefault(); controle.fechar(); return; }
+        if (e.key === 'Escape') {
+          if (e.target instanceof Element && e.target.getAttribute('aria-expanded') === 'true') return;
+          e.preventDefault();
+          controle.fechar();
+          return;
+        }
         if (e.key !== 'Tab') return;
         const focaveis = Array.from(painel.querySelectorAll('button, input, select, [tabindex]:not([tabindex="-1"])'))
           .filter((n) => !n.disabled && n.offsetParent !== null);
@@ -1719,6 +1951,158 @@ select.entrada {
       };
     },
 
+    campoSerie(inicial) {
+      const id = 'f-serie';
+      const input = el('input', {
+        id, class: 'entrada', type: 'text', value: inicial || '', placeholder: 'Ex.: Star Wars', maxlength: SERIE_MAX,
+        autocapitalize: 'words', autocomplete: 'off', autocorrect: 'off', spellcheck: 'false', enterkeyhint: 'next',
+        role: 'combobox', 'aria-autocomplete': 'list', 'aria-expanded': 'false', 'aria-controls': `${id}-lista`,
+      });
+      const lista = el('ul', { id: `${id}-lista`, class: 'combo-lista', role: 'listbox', 'aria-label': 'Sugestões de série', hidden: true });
+      const grupo = el('select', { id: `${id}-grupo`, class: 'entrada' }, GRUPOS.map((g) => el('option', { value: g.nome, text: g.nome })));
+      grupo.value = GRUPO_PADRAO;
+      const textoNovo = el('p');
+      const novo = el('div', { class: 'combo-novo', hidden: true },
+        textoNovo, el('label', { for: `${id}-grupo`, text: 'Grupo da nova série' }), grupo);
+      const erro = el('p', { class: 'erro-campo', id: `${id}-erro`, hidden: true });
+      const reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      let opcoes = [];
+      let ativa = -1;
+      let fecharTimer = null;
+
+      const rolar = () => {
+        input.scrollIntoView({ block: 'start', behavior: reduzirMovimento ? 'auto' : 'smooth' });
+      };
+      const fechar = () => {
+        lista.hidden = true;
+        input.setAttribute('aria-expanded', 'false');
+        input.removeAttribute('aria-activedescendant');
+        ativa = -1;
+      };
+      const marcarAtiva = (indice) => {
+        ativa = indice;
+        lista.querySelectorAll('[role="option"]').forEach((op, i) => op.setAttribute('aria-selected', String(i === ativa)));
+        const atual = lista.querySelector(`#${id}-op-${ativa}`);
+        if (atual) {
+          input.setAttribute('aria-activedescendant', atual.id);
+          atual.scrollIntoView({ block: 'nearest' });
+        } else {
+          input.removeAttribute('aria-activedescendant');
+        }
+      };
+      const atualizarNovo = () => {
+        const nome = Util.limparSerie(input.value);
+        const precisa = Boolean(nome) && !Series.doRegistro(nome) && !Series.doCatalogo(nome);
+        novo.hidden = !precisa;
+        if (precisa) textoNovo.textContent = `“${nome}” vai entrar como nova série.`;
+      };
+      const escolher = (indice) => {
+        const op = opcoes[indice];
+        if (!op) return;
+        if (!op.nova) input.value = op.nome;
+        fechar();
+        atualizarNovo();
+        if (op.nova) grupo.focus();
+      };
+      const montar = () => {
+        const termo = Util.chaveSerie(input.value);
+        const uso = Series.uso();
+        const registradas = new Set(Estado.listas.series.map((x) => Util.chaveSerie(x.nome)));
+        const minhas = Estado.listas.series
+          .filter((x) => !termo || Util.chaveSerie(x.nome).includes(termo))
+          .sort((a, b) => (uso.get(Util.chaveSerie(b.nome)) || 0) - (uso.get(Util.chaveSerie(a.nome)) || 0) || Series.porNome(a, b))
+          .slice(0, 8);
+        const sugestoes = Series.catalogo()
+          .filter((x) => !registradas.has(x.chave) && (!termo || x.chave.includes(termo)))
+          .slice(0, 8);
+        const exata = Boolean(termo) && (registradas.has(termo) || Series.catalogo().some((x) => x.chave === termo));
+
+        opcoes = [];
+        const filhos = [];
+        const opcao = (dados, conteudo, classe) => {
+          const indice = opcoes.length;
+          opcoes.push(dados);
+          return el('li', {
+            id: `${id}-op-${indice}`, class: `combo-opcao${classe ? ` ${classe}` : ''}`, role: 'option', 'aria-selected': 'false',
+            on: {
+              pointerdown: (e) => e.preventDefault(),
+              click: () => escolher(indice),
+            },
+          }, conteudo);
+        };
+        const linhaSerie = (x) => opcao(x, [
+          el('span', { class: 'combo-nome', text: x.nome }),
+          el('span', { class: 'tag-grupo', vars: Util.varsGrupo(x.grupo), text: x.grupo }),
+        ]);
+        if (minhas.length) {
+          filhos.push(el('li', { class: 'combo-titulo', role: 'presentation', text: 'Suas séries' }));
+          minhas.forEach((x) => filhos.push(linhaSerie(x)));
+        }
+        if (sugestoes.length) {
+          filhos.push(el('li', { class: 'combo-titulo', role: 'presentation', text: 'Sugestões' }));
+          sugestoes.forEach((x) => filhos.push(linhaSerie(x)));
+        }
+        if (termo && !exata) {
+          const nome = Util.limparSerie(input.value);
+          filhos.push(opcao({ nova: true, nome }, [Util.icone('mais'), el('span', { text: `Adicionar “${nome}” como nova série` })], 'combo-opcao-nova'));
+        }
+        lista.replaceChildren(...filhos);
+        ativa = -1;
+        input.removeAttribute('aria-activedescendant');
+        if (opcoes.length) {
+          lista.hidden = false;
+          input.setAttribute('aria-expanded', 'true');
+        } else {
+          fechar();
+        }
+        atualizarNovo();
+      };
+
+      input.addEventListener('input', montar);
+      input.addEventListener('focus', () => {
+        clearTimeout(fecharTimer);
+        montar();
+        setTimeout(rolar, 300);
+      });
+      input.addEventListener('blur', () => { fecharTimer = setTimeout(fechar, 150); });
+      input.addEventListener('keydown', (e) => {
+        const aberta = !lista.hidden;
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (!aberta) montar();
+          if (opcoes.length) marcarAtiva((ativa + 1) % opcoes.length);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (!aberta) montar();
+          if (opcoes.length) marcarAtiva(ativa <= 0 ? opcoes.length - 1 : ativa - 1);
+        } else if (e.key === 'Enter' && aberta && ativa >= 0) {
+          e.preventDefault();
+          escolher(ativa);
+        } else if (e.key === 'Escape' && aberta) {
+          e.preventDefault();
+          fechar();
+        }
+      });
+      if (window.visualViewport) {
+        const aoRedimensionar = () => { if (document.activeElement === input) rolar(); };
+        window.visualViewport.addEventListener('resize', aoRedimensionar);
+        input.addEventListener('remover-ouvintes', () => window.visualViewport.removeEventListener('resize', aoRedimensionar));
+      }
+      atualizarNovo();
+
+      const campo = el('div', { class: 'campo combo' },
+        el('label', { for: id, text: 'Série' }), input, lista, novo, erro);
+      return {
+        campo,
+        input,
+        erro,
+        valor: () => Util.limparSerie(input.value),
+        grupoNovo: () => grupo.value,
+        desligar: () => input.dispatchEvent(new Event('remover-ouvintes')),
+      };
+    },
+
     marcarErro(ref, mensagem) {
       if (mensagem) {
         ref.erro.textContent = mensagem;
@@ -1745,7 +2129,7 @@ select.entrada {
 
       const numero = Modais.campoTexto({ id: 'f-numero', rotulo: 'Número', valor: item && item.numero, placeholder: '001', maxlength: 12, inputmode: 'numeric' });
       const nome = Modais.campoTexto({ id: 'f-nome', rotulo: 'Nome', valor: item && item.nome, obrigatorio: true, placeholder: 'Ex.: Darth Vader', maxlength: 120, autocapitalize: 'words' });
-      const serie = Modais.campoTexto({ id: 'f-serie', rotulo: 'Série', valor: item && item.serie, placeholder: 'Ex.: Star Wars', maxlength: 120, autocapitalize: 'words' });
+      const serie = Modais.campoSerie(item ? item.serie : '');
 
       const select = el('select', { id: 'f-categoria', class: 'entrada', 'aria-required': 'true' },
         el('option', { value: '', text: 'Escolha' }),
@@ -1793,14 +2177,16 @@ select.entrada {
         const dados = {
           numero: numero.input.value.trim(),
           nome: nome.input.value.trim(),
-          serie: serie.input.value.trim(),
+          serie: serie.valor(),
           categoria: select.value,
           foto: campoFoto.valor(),
           valorPago,
           valorEstimado,
           desejo: colecao ? null : nota.valor(),
         };
-        const ok = editando ? Estado.atualizar(tipo, item.id, dados) : Estado.adicionar(tipo, dados);
+        const ok = editando
+          ? Estado.atualizar(tipo, item.id, dados, serie.grupoNovo())
+          : Estado.adicionar(tipo, dados, serie.grupoNovo());
         if (!ok) return;
         folha.fechar();
         Toast.ok(editando ? 'Alterações salvas' : (colecao ? 'Funko salvo na coleção' : 'Funko salvo na wishlist'));
@@ -1813,7 +2199,11 @@ select.entrada {
       const titulo = editando ? 'Editar Funko' : (colecao ? 'Novo Funko na coleção' : 'Novo Funko na wishlist');
       if (!editando) nome.input.setAttribute('data-foco-inicial', '');
       campoFoto.ligar();
-      folha = Folha.abrir({ rotulo: titulo, conteudo: [el('h2', { text: titulo }), form], aoFechar: campoFoto.desligar });
+      folha = Folha.abrir({
+        rotulo: titulo,
+        conteudo: [el('h2', { text: titulo }), form],
+        aoFechar: () => { campoFoto.desligar(); serie.desligar(); },
+      });
     },
 
     acoes(tipo, id) {
@@ -2092,9 +2482,11 @@ select.entrada {
      ======================================================= */
   function iniciar() {
     Render.montar();
-    const { colecao, wishlist } = Storage.carregarTudo();
+    const { colecao, wishlist, series, gravarSeries } = Storage.carregarTudo();
     Estado.listas.colecao = colecao;
     Estado.listas.wishlist = wishlist;
+    Estado.listas.series = series;
+    if (gravarSeries) Storage.gravar(CHAVES.series, series);
     Interacoes.ligar();
     Render.tudo();
     if (!Storage.disponivel()) {
