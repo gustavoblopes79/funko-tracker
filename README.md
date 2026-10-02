@@ -103,7 +103,7 @@ O service worker guarda os arquivos em cache. Para o iPhone baixar uma versão n
 1. Altere os arquivos.
 2. Em `service-worker.js`, aumente a versão do cache:
    ```js
-   const CACHE_NAME = 'funko-v3'; // era funko-v2
+   const CACHE_NAME = 'funko-v4'; // era funko-v3
    ```
 3. Se criar arquivos novos, inclua cada um na lista `ARQUIVOS` do mesmo arquivo, sempre com `./` na frente.
 4. Faça commit e push.

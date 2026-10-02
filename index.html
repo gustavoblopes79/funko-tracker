@@ -1201,13 +1201,7 @@ select.entrada {
         ? el('div', { class: 'ordenacao', role: 'group', 'aria-label': 'Ordenar wishlist' },
           criarOrdem('recentes', 'Mais recentes'), criarOrdem('desejo', 'Maior desejo'))
         : null;
-      painel.append(
-        barra,
-        chips,
-        ordenacao,
-        grade,
-        vazio,
-      );
+      Util.anexar(painel, [barra, chips, ordenacao, grade, vazio]);
       Interacoes.ligarCards(grade, tipo);
       return { barra, busca, chips, ordenacao, grade, vazio };
     },
