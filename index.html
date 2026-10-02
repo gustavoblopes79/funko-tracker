@@ -2254,6 +2254,7 @@ select.entrada {
         input.setAttribute('aria-expanded', 'false');
         input.removeAttribute('aria-activedescendant');
         ativa = -1;
+        atualizarNovo();
       };
       const marcarAtiva = (indice) => {
         ativa = indice;
@@ -2269,7 +2270,7 @@ select.entrada {
       const atualizarNovo = () => {
         const nome = Util.limparSerie(input.value);
         const precisa = Boolean(nome) && !Series.doRegistro(nome) && !Series.doCatalogo(nome);
-        novo.hidden = !precisa;
+        novo.hidden = !precisa || !lista.hidden;
         if (precisa) textoNovo.textContent = `“${nome}” vai entrar como nova série.`;
       };
       const escolher = (indice) => {
