@@ -247,6 +247,67 @@ img { display: block; max-width: 100%; }
 .ordenacao button[aria-pressed="true"] { background: var(--card); color: var(--text); }
 .ordenacao button:focus-visible { outline-offset: -2px; }
 
+.filtros-extra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-top: -4px;
+  padding: 0 var(--gutter-r) 14px var(--gutter-l);
+}
+.filtros-extra::-webkit-scrollbar { display: none; }
+.filtro-select {
+  flex: none;
+  max-width: 210px;
+  min-height: 44px;
+  padding: 0 34px 0 14px;
+  border: 1px solid var(--linha);
+  border-radius: 22px;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M5 8l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center / 16px;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+  -webkit-appearance: none;
+  appearance: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.filtro-select.ativo { border-color: var(--accent); color: var(--accent); }
+.filtro-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chip-agrupar[aria-pressed="true"] { background: var(--surface); border-color: var(--accent); color: var(--accent); }
+.limpar-filtros {
+  flex: none;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.secao-serie + .secao-serie { margin-top: 24px; }
+.secao-cabecalho {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 0 var(--gutter-r) 10px var(--gutter-l);
+}
+.secao-cabecalho h2 {
+  margin: 0;
+  font-family: var(--fonte-display);
+  font-size: 20px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.secao-qtd { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+
 /* =========================================================
    GRADE E CARD: a caixa do Funko Pop
    ========================================================= */
@@ -514,6 +575,9 @@ img { display: block; max-width: 100%; }
 .barra span { display: block; height: 100%; border-radius: 4px; background: var(--cat); }
 
 .backup-botoes { display: grid; gap: 10px; }
+.bloco-rodape { display: grid; gap: 10px; margin-top: 16px; }
+.bloco-rodape .bloco-texto { margin: 0; }
+.bloco-nota { margin: 14px 0 0; color: var(--muted); font-size: 15px; }
 
 /* =========================================================
    FOLHAS (bottom sheet e action sheet)
@@ -582,6 +646,23 @@ img { display: block; max-width: 100%; }
 .acao:focus-visible { outline-offset: -3px; }
 .acao-cancelar { margin-top: 10px; width: 100%; background: var(--card); justify-content: center; font-weight: 700; border-radius: 16px; }
 
+.series-grupo { margin-top: 18px; }
+.series-grupo h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #cfcfcf;
+}
+.series-grupo h3::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--grp); }
+.serie-linha { justify-content: space-between; }
+.serie-linha .serie-nome { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.serie-linha .serie-qtd { color: var(--muted-card); font-size: 14px; font-weight: 500; white-space: nowrap; }
+.serie-linha svg { width: 20px; height: 20px; }
+.series-fechar { margin-top: 20px; }
+
 /* =========================================================
    FORMULÁRIO
    ========================================================= */
@@ -636,6 +717,40 @@ select.entrada {
 .foto-botoes { display: grid; gap: 8px; flex: 1; }
 .foto-botoes .btn { min-height: 44px; font-size: 15px; }
 .btn-remover-foto { background: none; color: var(--danger); border: 1px solid #3a3a3a; }
+.foto-botoes { grid-template-columns: 1fr 1fr; align-content: center; }
+.foto-botoes .btn-foto {
+  min-height: 68px;
+  padding: 8px 6px;
+  flex-direction: column;
+  gap: 5px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.15;
+  text-align: center;
+}
+.foto-botoes .btn-foto svg { width: 22px; height: 22px; }
+.foto-botoes .btn-remover-foto { grid-column: 1 / -1; }
+.area-colar {
+  margin-top: 8px;
+  min-height: 64px;
+  padding: 12px 14px;
+  border: 1.5px dashed var(--accent);
+  border-radius: 12px;
+  background: rgba(232, 67, 147, .08);
+  color: var(--text);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  -webkit-user-select: text;
+  user-select: text;
+  caret-color: transparent;
+  cursor: text;
+}
+.area-colar:empty::before { content: attr(data-placeholder); color: #f7c6de; pointer-events: none; }
+.area-colar:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.foto-dica { margin: 8px 0 0; font-size: 14px; color: var(--muted); }
 
 .nota { border: 0; margin: 0; padding: 0; min-width: 0; }
 .nota legend { padding: 0; margin-bottom: 4px; font-size: 14px; font-weight: 600; color: #cfcfcf; }
@@ -660,6 +775,57 @@ select.entrada {
 .nota-estrela:has(input:checked) svg { transform: scale(1.12); }
 .nota-estrela:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 10px; }
 .nota-texto { color: var(--text); font-weight: 600; font-size: 15px; }
+
+.combo-lista {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 6px;
+  background: var(--card);
+  border: 1px solid #333;
+  border-radius: 12px;
+  max-height: 288px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.combo-titulo { padding: 8px 10px 4px; font-size: 13px; font-weight: 600; color: var(--muted-card); }
+.combo-opcao {
+  min-height: 48px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.combo-opcao .combo-nome { overflow-wrap: anywhere; }
+.combo-opcao[aria-selected="true"] { background: #353535; box-shadow: inset 3px 0 0 var(--accent); }
+@media (hover: hover) { .combo-opcao:hover { background: #303030; } }
+.combo-opcao-nova { justify-content: flex-start; color: var(--accent); font-weight: 700; }
+.combo-opcao-nova svg { width: 18px; height: 18px; flex: none; }
+.combo-novo {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px dashed #444;
+  border-radius: 12px;
+  background: var(--bg);
+}
+.combo-novo label { font-size: 14px; font-weight: 600; color: #cfcfcf; }
+.combo-novo p { margin: 0; font-size: 14px; color: var(--muted); }
+.tag-grupo {
+  flex: none;
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--grp-fundo, #2e2e2e);
+  color: var(--grp, #cfcfcf);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
 
 .form-botoes { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; margin-top: 4px; }
 
@@ -757,13 +923,54 @@ select.entrada {
     { nome: 'Chrome', cor: '#e2e8f0' },
   ];
   const MAPA_CATEGORIAS = new Map(CATEGORIAS.map((c) => [c.nome, c]));
-  const CHAVES = { colecao: 'funko_colecao', wishlist: 'funko_wishlist' };
+  const CHAVES = { colecao: 'funko_colecao', wishlist: 'funko_wishlist', series: 'funko_series' };
   const CHAVE_ULTIMO_BACKUP = 'funko_ultimo_backup';
   const TIPOS = ['colecao', 'wishlist'];
   const FOTO_LADO_MAX = 800;
   const FOTO_QUALIDADE = 0.7;
   const TOQUE_LONGO_MS = 500;
   const DESEJO_PADRAO = 3;
+  const SERIE_MAX = 120;
+  const GRUPO_PADRAO = 'Outros';
+  const GRUPOS = [
+    { nome: 'Anime e mangá', cor: '#fb7185' },
+    { nome: 'Filmes', cor: '#60a5fa' },
+    { nome: 'Séries de TV', cor: '#c084fc' },
+    { nome: 'Games', cor: '#34d399' },
+    { nome: 'Quadrinhos', cor: '#facc15' },
+    { nome: 'Desenhos', cor: '#fdba74' },
+    { nome: 'Música', cor: '#a5f3fc' },
+    { nome: 'Esportes', cor: '#a3e635' },
+    { nome: 'Outros', cor: '#a8a29e' },
+  ];
+  const MAPA_GRUPOS = new Map(GRUPOS.map((g) => [g.nome, g]));
+
+  // Sugestões embutidas. O registro do próprio usuário fica em funko_series.
+  const CATALOGO_SERIES = [
+    ['Boku no Hero Academia', 'Anime e mangá'], ['Naruto', 'Anime e mangá'], ['One Piece', 'Anime e mangá'],
+    ['Dragon Ball', 'Anime e mangá'], ['Demon Slayer', 'Anime e mangá'], ['Jujutsu Kaisen', 'Anime e mangá'],
+    ['Attack on Titan', 'Anime e mangá'], ['Death Note', 'Anime e mangá'], ['Hunter x Hunter', 'Anime e mangá'],
+    ['Chainsaw Man', 'Anime e mangá'], ['Spy x Family', 'Anime e mangá'], ['Sailor Moon', 'Anime e mangá'],
+    ['Bleach', 'Anime e mangá'], ['Cowboy Bebop', 'Anime e mangá'], ['Os Cavaleiros do Zodíaco', 'Anime e mangá'],
+    ['Star Wars', 'Filmes'], ['Harry Potter', 'Filmes'], ['O Senhor dos Anéis', 'Filmes'],
+    ['Jurassic Park', 'Filmes'], ['De Volta para o Futuro', 'Filmes'], ['Toy Story', 'Filmes'],
+    ['Matrix', 'Filmes'], ['Os Caça-Fantasmas', 'Filmes'], ['Indiana Jones', 'Filmes'],
+    ['Studio Ghibli', 'Filmes'], ['Disney', 'Filmes'], ['Piratas do Caribe', 'Filmes'],
+    ['Stranger Things', 'Séries de TV'], ['The Office', 'Séries de TV'], ['Game of Thrones', 'Séries de TV'],
+    ['Friends', 'Séries de TV'], ['The Mandalorian', 'Séries de TV'], ['Wednesday', 'Séries de TV'],
+    ['Breaking Bad', 'Séries de TV'], ['The Walking Dead', 'Séries de TV'], ['La Casa de Papel', 'Séries de TV'],
+    ['Doctor Who', 'Séries de TV'], ['The Big Bang Theory', 'Séries de TV'], ['Supernatural', 'Séries de TV'],
+    ['Pokémon', 'Games'], ['Fortnite', 'Games'], ['Sonic', 'Games'], ['Super Mario', 'Games'],
+    ['The Legend of Zelda', 'Games'], ['Minecraft', 'Games'], ["Five Nights at Freddy's", 'Games'],
+    ['Halo', 'Games'], ['God of War', 'Games'], ['Overwatch', 'Games'], ['League of Legends', 'Games'],
+    ['Marvel', 'Quadrinhos'], ['DC', 'Quadrinhos'], ['Batman', 'Quadrinhos'], ['Spider-Man', 'Quadrinhos'],
+    ['X-Men', 'Quadrinhos'], ['Turma da Mônica', 'Quadrinhos'],
+    ['Os Simpsons', 'Desenhos'], ['Bob Esponja', 'Desenhos'], ['Hora de Aventura', 'Desenhos'],
+    ['Scooby-Doo', 'Desenhos'], ['Rick and Morty', 'Desenhos'], ['Looney Tunes', 'Desenhos'],
+    ['Avatar: A Lenda de Aang', 'Desenhos'],
+    ['BTS', 'Música'], ['KISS', 'Música'], ['Queen', 'Música'], ['The Beatles', 'Música'], ['Metallica', 'Música'],
+    ['NBA', 'Esportes'], ['NFL', 'Esportes'], ['WWE', 'Esportes'], ['Futebol', 'Esportes'],
+  ].map(([nome, grupo]) => ({ nome, grupo }));
   const DESEJO_TEXTOS = ['', 'Seria legal ter', 'Gostaria de ter', 'Quero', 'Quero muito', 'Preciso ter'];
 
   const ROTULOS = {
@@ -783,6 +990,9 @@ select.entrada {
     editar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
     lixeira: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
     mover: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg>',
+    colar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M9 4.5H7A1.5 1.5 0 0 0 5.5 6v13A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2"/><rect x="9" y="3" width="6" height="3.5" rx="1"/><path d="M9 15l2-2.5 1.6 2 1.4-1.5L16 15.5H8.5"/></svg>',
+    pasta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5A1.5 1.5 0 0 1 5 5h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z"/></svg>',
+    mesclar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v5a4 4 0 0 0 4 4h2a4 4 0 0 1 4 4v5"/><path d="M18 3v5a4 4 0 0 1-4 4"/><path d="M13 18l3 3 3-3"/></svg>',
     camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
     ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     alerta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.5"/></svg>',
@@ -879,6 +1089,20 @@ select.entrada {
       return String(texto || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
     },
 
+    // Chave de comparação de séries: sem maiúsculas, acentos nem espaços extras.
+    chaveSerie(nome) {
+      return Util.normalizarBusca(nome).replace(/\s+/g, ' ');
+    },
+
+    limparSerie(nome) {
+      return String(nome || '').replace(/\s+/g, ' ').trim().slice(0, SERIE_MAX);
+    },
+
+    varsGrupo(nome) {
+      const cor = (MAPA_GRUPOS.get(nome) || MAPA_GRUPOS.get(GRUPO_PADRAO)).cor;
+      return { '--grp': cor, '--grp-fundo': Util.hexParaRgba(cor, 0.16) };
+    },
+
     hexParaRgba(hex, alfa) {
       const n = parseInt(hex.slice(1), 16);
       return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alfa})`;
@@ -923,6 +1147,36 @@ select.entrada {
       ctx.fillRect(0, 0, largura, altura);
       ctx.drawImage(img, 0, 0, largura, altura);
       return canvas.toDataURL('image/jpeg', FOTO_QUALIDADE);
+    },
+
+    dataUrlParaBlob(url) {
+      const [cabecalho, base64] = String(url).split(',');
+      const tipo = (cabecalho.match(/^data:([^;]+);base64$/) || [])[1];
+      if (!tipo || !base64) return null;
+      const binario = atob(base64);
+      const bytes = new Uint8Array(binario.length);
+      for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
+      return new Blob([bytes], { type: tipo });
+    },
+
+    // Procura uma imagem num evento de colar: arquivos, itens ou <img> embutida no HTML copiado.
+    imagemDoColar(evento) {
+      const dados = evento.clipboardData;
+      if (!dados) return null;
+      const arquivo = Array.from(dados.files || []).find((f) => f.type.startsWith('image/'));
+      if (arquivo) return arquivo;
+      for (const item of Array.from(dados.items || [])) {
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          const f = item.getAsFile();
+          if (f) return f;
+        }
+      }
+      const html = dados.getData && dados.getData('text/html');
+      if (html && html.includes('<img')) {
+        const img = new DOMParser().parseFromString(html, 'text/html').querySelector('img[src^="data:image/"]');
+        if (img) return Util.dataUrlParaBlob(img.getAttribute('src'));
+      }
+      return null;
     },
 
     lerArquivoTexto(arquivo) {
@@ -1028,20 +1282,144 @@ select.entrada {
       return { colecao, wishlist };
     },
 
+    normalizarSerie(bruto, chaves, ids) {
+      if (!bruto || typeof bruto !== 'object' || Array.isArray(bruto)) return null;
+      const nome = Util.limparSerie(typeof bruto.nome === 'string' ? bruto.nome : '');
+      const chave = Util.chaveSerie(nome);
+      if (!chave || chaves.has(chave)) return null;
+      chaves.add(chave);
+      let id = Storage.texto(bruto.id, 64);
+      if (!id || ids.has(id)) id = Util.gerarId();
+      ids.add(id);
+      const data = new Date(bruto.dataCriacao);
+      return {
+        id,
+        nome,
+        grupo: MAPA_GRUPOS.has(bruto.grupo) ? bruto.grupo : GRUPO_PADRAO,
+        dataCriacao: Number.isNaN(data.getTime()) ? new Date().toISOString() : data.toISOString(),
+      };
+    },
+
+    normalizarSeries(brutas) {
+      const chaves = new Set();
+      const ids = new Set();
+      return (Array.isArray(brutas) ? brutas : []).map((b) => Storage.normalizarSerie(b, chaves, ids)).filter(Boolean);
+    },
+
+    // Toda série usada por algum Funko entra no registro, sem alterar os Funkos.
+    completarSeries(series, colecao, wishlist) {
+      const chaves = new Set(series.map((x) => Util.chaveSerie(x.nome)));
+      const novas = [];
+      for (const item of [...colecao, ...wishlist]) {
+        const nome = Util.limparSerie(item.serie);
+        const chave = Util.chaveSerie(nome);
+        if (!chave || chaves.has(chave)) continue;
+        chaves.add(chave);
+        const doCatalogo = Series.doCatalogo(nome);
+        novas.push({
+          id: Util.gerarId(),
+          nome,
+          grupo: doCatalogo ? doCatalogo.grupo : GRUPO_PADRAO,
+          dataCriacao: item.dataCriacao,
+        });
+      }
+      return novas.length ? [...series, ...novas] : series;
+    },
+
     carregarTudo() {
-      return Storage.normalizarListas(Storage.lerBruto(CHAVES.colecao), Storage.lerBruto(CHAVES.wishlist));
+      const { colecao, wishlist } = Storage.normalizarListas(Storage.lerBruto(CHAVES.colecao), Storage.lerBruto(CHAVES.wishlist));
+      const brutas = Storage.lerBruto(CHAVES.series);
+      const series = Storage.completarSeries(Storage.normalizarSeries(brutas), colecao, wishlist);
+      const gravarSeries = Storage.lerTexto(CHAVES.series) === null || series.length !== brutas.length;
+      return { colecao, wishlist, series, gravarSeries };
     },
   };
 
   /* =======================================================
      ESTADO
      ======================================================= */
+  const Series = {
+    catalogoComChave: null,
+
+    catalogo() {
+      if (!Series.catalogoComChave) Series.catalogoComChave = CATALOGO_SERIES.map((x) => ({ ...x, chave: Util.chaveSerie(x.nome) }));
+      return Series.catalogoComChave;
+    },
+
+    doCatalogo(nome) {
+      const chave = Util.chaveSerie(nome);
+      return chave ? Series.catalogo().find((x) => x.chave === chave) || null : null;
+    },
+
+    doRegistro(nome, series = Estado.listas.series) {
+      const chave = Util.chaveSerie(nome);
+      return chave ? series.find((x) => Util.chaveSerie(x.nome) === chave) || null : null;
+    },
+
+    porId(id) {
+      return Estado.listas.series.find((x) => x.id === id) || null;
+    },
+
+    grupoDe(nome) {
+      const registrada = Series.doRegistro(nome);
+      if (registrada) return registrada.grupo;
+      const doCatalogo = Series.doCatalogo(nome);
+      return doCatalogo ? doCatalogo.grupo : GRUPO_PADRAO;
+    },
+
+    // Quantos Funkos usam cada série (chave normalizada → quantidade).
+    uso(tipos = TIPOS) {
+      const mapa = new Map();
+      for (const tipo of tipos) {
+        for (const item of Estado.listas[tipo]) {
+          const chave = Util.chaveSerie(item.serie);
+          if (chave) mapa.set(chave, (mapa.get(chave) || 0) + 1);
+        }
+      }
+      return mapa;
+    },
+
+    contar(nome) {
+      return Series.uso().get(Util.chaveSerie(nome)) || 0;
+    },
+
+    porNome(a, b) {
+      return a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' });
+    },
+
+    // Devolve o registro com a série incluída (se ainda não existir) e a grafia a gravar no Funko.
+    incluir(series, nome, grupo) {
+      const limpo = Util.limparSerie(nome);
+      if (!limpo) return { series, nome: '' };
+      const existente = Series.doRegistro(limpo, series);
+      if (existente) return { series, nome: existente.nome };
+      const doCatalogo = Series.doCatalogo(limpo);
+      const nova = {
+        id: Util.gerarId(),
+        nome: doCatalogo ? doCatalogo.nome : limpo,
+        grupo: doCatalogo ? doCatalogo.grupo : (MAPA_GRUPOS.has(grupo) ? grupo : GRUPO_PADRAO),
+        dataCriacao: new Date().toISOString(),
+      };
+      return { series: [...series, nova], nome: nova.nome };
+    },
+  };
+
   const Estado = {
     aba: 'colecao',
-    listas: { colecao: [], wishlist: [] },
+    listas: { colecao: [], wishlist: [], series: [] },
     filtros: {
-      colecao: { busca: '', categoria: null },
-      wishlist: { busca: '', categoria: null, ordem: 'recentes' },
+      colecao: { busca: '', categoria: null, grupo: null, serie: null, agrupar: false },
+      wishlist: { busca: '', categoria: null, grupo: null, serie: null, agrupar: false, ordem: 'recentes' },
+    },
+    dashTodasSeries: false,
+
+    temFiltro(tipo) {
+      const f = Estado.filtros[tipo];
+      return Boolean(f.busca.trim() || f.categoria || f.grupo || f.serie);
+    },
+
+    limparFiltros(tipo) {
+      Object.assign(Estado.filtros[tipo], { busca: '', categoria: null, grupo: null, serie: null });
     },
 
     buscar(tipo, id) {
@@ -1051,7 +1429,7 @@ select.entrada {
     // Grava no disco antes de aceitar a mudança; se falhar, o estado em memória continua igual.
     persistir(novas) {
       const gravadas = [];
-      for (const tipo of TIPOS) {
+      for (const tipo of Object.keys(CHAVES)) {
         if (!novas[tipo]) continue;
         const r = Storage.gravar(CHAVES[tipo], novas[tipo]);
         if (!r.ok) {
@@ -1068,22 +1446,29 @@ select.entrada {
       return true;
     },
 
-    adicionar(tipo, dados) {
+    adicionar(tipo, dados, grupoSerie) {
+      const { series, nome: serie } = Series.incluir(Estado.listas.series, dados.serie, grupoSerie);
       const item = {
         id: Util.gerarId(),
         ...dados,
+        serie,
         valorPago: tipo === 'colecao' ? dados.valorPago : null,
         valorEstimado: tipo === 'colecao' ? dados.valorEstimado : null,
         desejo: tipo === 'wishlist' ? dados.desejo : null,
         dataCriacao: new Date().toISOString(),
         tipo,
       };
-      return Estado.persistir({ [tipo]: [item, ...Estado.listas[tipo]] });
+      const novas = { [tipo]: [item, ...Estado.listas[tipo]] };
+      if (series !== Estado.listas.series) novas.series = series;
+      return Estado.persistir(novas);
     },
 
-    atualizar(tipo, id, dados) {
-      const lista = Estado.listas[tipo].map((i) => (i.id === id ? { ...i, ...dados } : i));
-      return Estado.persistir({ [tipo]: lista });
+    atualizar(tipo, id, dados, grupoSerie) {
+      const { series, nome: serie } = Series.incluir(Estado.listas.series, dados.serie, grupoSerie);
+      const lista = Estado.listas[tipo].map((i) => (i.id === id ? { ...i, ...dados, serie } : i));
+      const novas = { [tipo]: lista };
+      if (series !== Estado.listas.series) novas.series = series;
+      return Estado.persistir(novas);
     },
 
     excluir(tipo, id) {
@@ -1106,17 +1491,55 @@ select.entrada {
       });
     },
 
-    substituirTudo(colecao, wishlist) {
-      return Estado.persistir({ colecao, wishlist });
+    // Renomear e mesclar mexem nos Funkos e no registro de uma vez: ou grava tudo, ou nada muda.
+    trocarSerieDosFunkos(chaveAntiga, novoNome) {
+      const troca = (lista) => lista.map((i) => (Util.chaveSerie(i.serie) === chaveAntiga ? { ...i, serie: novoNome } : i));
+      return { colecao: troca(Estado.listas.colecao), wishlist: troca(Estado.listas.wishlist) };
+    },
+
+    renomearSerie(id, novoNome) {
+      const atual = Series.porId(id);
+      if (!atual) return false;
+      return Estado.persistir({
+        ...Estado.trocarSerieDosFunkos(Util.chaveSerie(atual.nome), novoNome),
+        series: Estado.listas.series.map((x) => (x.id === id ? { ...x, nome: novoNome } : x)),
+      });
+    },
+
+    mudarGrupoSerie(id, grupo) {
+      if (!MAPA_GRUPOS.has(grupo)) return false;
+      return Estado.persistir({ series: Estado.listas.series.map((x) => (x.id === id ? { ...x, grupo } : x)) });
+    },
+
+    mesclarSeries(origemId, destinoId) {
+      const origem = Series.porId(origemId);
+      const destino = Series.porId(destinoId);
+      if (!origem || !destino || origem.id === destino.id) return false;
+      return Estado.persistir({
+        ...Estado.trocarSerieDosFunkos(Util.chaveSerie(origem.nome), destino.nome),
+        series: Estado.listas.series.filter((x) => x.id !== origemId),
+      });
+    },
+
+    excluirSerie(id) {
+      const serie = Series.porId(id);
+      if (!serie || Series.contar(serie.nome) > 0) return false;
+      return Estado.persistir({ series: Estado.listas.series.filter((x) => x.id !== id) });
+    },
+
+    substituirTudo(colecao, wishlist, series) {
+      return Estado.persistir({ colecao, wishlist, series });
     },
 
     visiveis(tipo) {
-      const { busca, categoria, ordem } = Estado.filtros[tipo];
+      const { busca, categoria, grupo, serie, ordem } = Estado.filtros[tipo];
       const termo = Util.normalizarBusca(busca);
       const porData = (a, b) => (a.dataCriacao < b.dataCriacao ? 1 : a.dataCriacao > b.dataCriacao ? -1 : 0);
       const porDesejo = (a, b) => (b.desejo || 0) - (a.desejo || 0) || porData(a, b);
       return Estado.listas[tipo]
         .filter((i) => !categoria || i.categoria === categoria)
+        .filter((i) => !grupo || (Util.chaveSerie(i.serie) && Series.grupoDe(i.serie) === grupo))
+        .filter((i) => !serie || Util.chaveSerie(i.serie) === serie)
         .filter((i) => !termo || [i.nome, i.serie, i.numero].some((c) => Util.normalizarBusca(c).includes(termo)))
         .sort(ordem === 'desejo' ? porDesejo : porData);
     },
@@ -1189,8 +1612,28 @@ select.entrada {
       }, categoria ? el('span', { class: 'chip-ponto', 'aria-hidden': 'true' }) : null, categoria ? categoria.nome : 'Todas');
       chips.append(criarChip(null), ...CATEGORIAS.map(criarChip));
 
-      const grade = el('div', { class: 'grade', role: 'list' });
+      const grade = el('div', { class: 'lista-funkos' });
       const vazio = el('div', { class: 'vazio', hidden: true });
+
+      const filtro = Estado.filtros[tipo];
+      const selGrupo = el('select', {
+        class: 'filtro-select', 'aria-label': 'Filtrar por grupo',
+        on: { change: (e) => { filtro.grupo = e.target.value || null; Render.lista(tipo); } },
+      });
+      const selSerie = el('select', {
+        class: 'filtro-select', 'aria-label': 'Filtrar por série',
+        on: { change: (e) => { filtro.serie = e.target.value || null; Render.lista(tipo); } },
+      });
+      const btnAgrupar = el('button', {
+        type: 'button', class: 'chip chip-agrupar', 'aria-pressed': 'false',
+        on: { click: () => { filtro.agrupar = !filtro.agrupar; Render.lista(tipo); } },
+      }, 'Agrupar por série');
+      const btnLimpar = el('button', {
+        type: 'button', class: 'limpar-filtros', hidden: true,
+        on: { click: () => { Estado.limparFiltros(tipo); Render.lista(tipo); } },
+      }, 'Limpar filtros');
+      const filtrosExtra = el('div', { class: 'filtros-extra', role: 'group', 'aria-label': 'Filtrar por grupo e série' },
+        selGrupo, selSerie, btnAgrupar, btnLimpar);
 
       const barra = el('div', { class: 'barra-busca' }, el('div', { class: 'campo-busca' }, Util.icone('busca'), busca));
       const criarOrdem = (valor, texto) => el('button', {
@@ -1201,9 +1644,9 @@ select.entrada {
         ? el('div', { class: 'ordenacao', role: 'group', 'aria-label': 'Ordenar wishlist' },
           criarOrdem('recentes', 'Mais recentes'), criarOrdem('desejo', 'Maior desejo'))
         : null;
-      Util.anexar(painel, [barra, chips, ordenacao, grade, vazio]);
+      Util.anexar(painel, [barra, chips, filtrosExtra, ordenacao, grade, vazio]);
       Interacoes.ligarCards(grade, tipo);
-      return { barra, busca, chips, ordenacao, grade, vazio };
+      return { barra, busca, chips, filtrosExtra, selGrupo, selSerie, btnAgrupar, btnLimpar, ordenacao, grade, vazio };
     },
 
     tudo() {
@@ -1247,18 +1690,88 @@ select.entrada {
         }
       }
 
+      const temSeries = Render.filtrosDeSerie(tipo, refs);
+      refs.filtrosExtra.hidden = !temItens || (!temSeries && !Estado.temFiltro(tipo));
+
       const itens = Estado.visiveis(tipo);
-      refs.grade.replaceChildren(...itens.map((i) => Render.card(i, tipo)));
+      if (itens.length && filtro.agrupar && temSeries) {
+        refs.grade.replaceChildren(...Render.secoes(itens, tipo));
+      } else {
+        refs.grade.replaceChildren(el('div', { class: 'grade', role: 'list' }, itens.map((i) => Render.card(i, tipo))));
+      }
       refs.grade.hidden = itens.length === 0;
       refs.vazio.hidden = itens.length > 0;
       if (!itens.length) refs.vazio.replaceChildren(...Render.estadoVazio(tipo));
     },
 
+    // Monta as opções de grupo e série com o que existe nesta lista. Devolve se há alguma série.
+    filtrosDeSerie(tipo, refs) {
+      const filtro = Estado.filtros[tipo];
+      const usadas = new Map();
+      for (const item of Estado.listas[tipo]) {
+        const chave = Util.chaveSerie(item.serie);
+        if (!chave || usadas.has(chave)) continue;
+        const registrada = Series.doRegistro(item.serie);
+        usadas.set(chave, {
+          chave,
+          nome: registrada ? registrada.nome : Util.limparSerie(item.serie),
+          grupo: registrada ? registrada.grupo : Series.grupoDe(item.serie),
+        });
+      }
+      const todas = Array.from(usadas.values());
+      const grupos = GRUPOS.filter((g) => todas.some((u) => u.grupo === g.nome));
+      if (filtro.grupo && !grupos.some((g) => g.nome === filtro.grupo)) filtro.grupo = null;
+      const series = todas.filter((u) => !filtro.grupo || u.grupo === filtro.grupo).sort(Series.porNome);
+      if (filtro.serie && !series.some((u) => u.chave === filtro.serie)) filtro.serie = null;
+
+      refs.selGrupo.replaceChildren(el('option', { value: '', text: 'Todos os grupos' }),
+        ...grupos.map((g) => el('option', { value: g.nome, text: g.nome })));
+      refs.selGrupo.value = filtro.grupo || '';
+      refs.selGrupo.classList.toggle('ativo', Boolean(filtro.grupo));
+      refs.selSerie.replaceChildren(el('option', { value: '', text: 'Todas as séries' }),
+        ...series.map((u) => el('option', { value: u.chave, text: u.nome })));
+      refs.selSerie.value = filtro.serie || '';
+      refs.selSerie.classList.toggle('ativo', Boolean(filtro.serie));
+
+      const temSeries = todas.length > 0;
+      refs.selGrupo.hidden = !temSeries;
+      refs.selSerie.hidden = !temSeries;
+      refs.btnAgrupar.hidden = !temSeries;
+      refs.btnAgrupar.setAttribute('aria-pressed', String(filtro.agrupar));
+      refs.btnLimpar.hidden = !Estado.temFiltro(tipo);
+      return temSeries;
+    },
+
+    secoes(itens, tipo) {
+      const blocos = new Map();
+      for (const item of itens) {
+        const chave = Util.chaveSerie(item.serie);
+        if (!blocos.has(chave)) {
+          const registrada = chave ? Series.doRegistro(item.serie) : null;
+          blocos.set(chave, {
+            nome: chave ? (registrada ? registrada.nome : Util.limparSerie(item.serie)) : 'Sem série',
+            grupo: chave ? Series.grupoDe(item.serie) : null,
+            itens: [],
+          });
+        }
+        blocos.get(chave).itens.push(item);
+      }
+      return Array.from(blocos.entries())
+        .sort(([ca, a], [cb, b]) => (ca === '') - (cb === '') || b.itens.length - a.itens.length || Series.porNome(a, b))
+        .map(([, bloco]) => el('section', { class: 'secao-serie', 'aria-label': `${bloco.nome}, ${Util.plural(bloco.itens.length, 'Funko', 'Funkos')}` },
+          el('div', { class: 'secao-cabecalho' },
+            el('h2', { text: bloco.nome }),
+            bloco.grupo ? el('span', { class: 'tag-grupo', vars: Util.varsGrupo(bloco.grupo), text: bloco.grupo }) : null,
+            el('span', { class: 'secao-qtd', text: Util.plural(bloco.itens.length, 'Funko', 'Funkos') })),
+          el('div', { class: 'grade', role: 'list' }, bloco.itens.map((i) => Render.card(i, tipo)))));
+    },
+
     estadoVazio(tipo) {
       const filtro = Estado.filtros[tipo];
-      if (Estado.listas[tipo].length && (filtro.busca || filtro.categoria)) {
+      if (Estado.listas[tipo].length && Estado.temFiltro(tipo)) {
         let texto;
-        if (filtro.busca && filtro.categoria) texto = `Nenhum ${filtro.categoria} combina com “${filtro.busca.trim()}”.`;
+        if (filtro.grupo || filtro.serie) texto = 'Nenhum Funko combina com os filtros escolhidos. Tire um filtro ou limpe todos.';
+        else if (filtro.busca && filtro.categoria) texto = `Nenhum ${filtro.categoria} combina com “${filtro.busca.trim()}”.`;
         else if (filtro.busca) texto = `Nenhum Funko combina com “${filtro.busca.trim()}”. Confira a grafia ou busque pelo número.`;
         else texto = `Você ainda não tem nenhum ${filtro.categoria} aqui.`;
         return [
@@ -1267,8 +1780,8 @@ select.entrada {
           el('p', { text: texto }),
           el('button', {
             type: 'button', class: 'btn btn-secundario',
-            on: { click: () => { Object.assign(Estado.filtros[tipo], { busca: '', categoria: null }); Render.lista(tipo); } },
-          }, 'Limpar busca e filtro'),
+            on: { click: () => { Estado.limparFiltros(tipo); Render.lista(tipo); } },
+          }, 'Limpar filtros'),
         ];
       }
       const colecao = tipo === 'colecao';
@@ -1320,7 +1833,7 @@ select.entrada {
 
       const info = el('div', { class: 'pop-info' },
         el('h3', { class: 'pop-nome', text: item.nome }),
-        item.serie ? el('p', { class: 'pop-serie', text: item.serie }) : null,
+        item.serie ? el('p', { class: 'pop-serie', text: (Series.doRegistro(item.serie) || { nome: item.serie }).nome }) : null,
         el('span', { class: 'tag', text: item.categoria }),
         tipo === 'wishlist' && item.desejo ? Render.estrelas(item.desejo) : null,
         tipo === 'colecao' ? el('dl', { class: 'pop-valores' },
@@ -1369,25 +1882,65 @@ select.entrada {
         ),
       );
 
-      const contagem = new Map();
-      for (const i of colecao) contagem.set(i.categoria, (contagem.get(i.categoria) || 0) + 1);
-      const ordemOriginal = new Map(CATEGORIAS.map((c, idx) => [c.nome, idx]));
-      const linhas = Array.from(contagem.entries())
-        .sort((a, b) => b[1] - a[1] || ordemOriginal.get(a[0]) - ordemOriginal.get(b[0]))
-        .map(([nome, qtd]) => {
-          const frac = qtd / colecao.length;
-          return el('li', { class: 'categoria-linha', vars: Util.varsCategoria(nome) },
-            el('span', { class: 'categoria-nome', text: nome }),
-            el('span', { class: 'categoria-num' }, el('strong', { text: String(qtd) }), ` (${Util.percentual.format(frac)})`),
-            el('div', { class: 'barra', 'aria-hidden': 'true' }, el('span', { vars: { width: `${(frac * 100).toFixed(1)}%` } })));
-        });
+      const porCategoria = new Map();
+      for (const i of colecao) porCategoria.set(i.categoria, (porCategoria.get(i.categoria) || 0) + 1);
+      const ordemCategorias = new Map(CATEGORIAS.map((c, idx) => [c.nome, idx]));
+      const categorias = Render.blocoBarras({
+        id: 'titulo-categorias',
+        titulo: 'Por categoria',
+        total: colecao.length,
+        linhas: Array.from(porCategoria.entries())
+          .sort((a, b) => b[1] - a[1] || ordemCategorias.get(a[0]) - ordemCategorias.get(b[0]))
+          .map(([nome, qtd]) => ({ nome, qtd, vars: Util.varsCategoria(nome) })),
+        vazio: 'Adicione Funkos à coleção para ver quantos você tem de cada categoria.',
+      });
 
-      const categorias = el('section', { class: 'bloco', 'aria-labelledby': 'titulo-categorias' },
-        el('h2', { id: 'titulo-categorias', text: 'Por categoria' }),
-        linhas.length
-          ? el('ul', { class: 'categorias-lista' }, linhas)
-          : el('p', { class: 'bloco-texto', text: 'Adicione Funkos à coleção para ver quantos você tem de cada categoria.' }),
-      );
+      const comSerie = colecao.filter((i) => Util.chaveSerie(i.serie));
+      const semSerie = colecao.length - comSerie.length;
+      const porGrupo = new Map();
+      const porSerie = new Map();
+      for (const i of comSerie) {
+        const grupo = Series.grupoDe(i.serie);
+        porGrupo.set(grupo, (porGrupo.get(grupo) || 0) + 1);
+        const chave = Util.chaveSerie(i.serie);
+        if (!porSerie.has(chave)) {
+          const registrada = Series.doRegistro(i.serie);
+          porSerie.set(chave, { nome: registrada ? registrada.nome : Util.limparSerie(i.serie), grupo, qtd: 0 });
+        }
+        porSerie.get(chave).qtd += 1;
+      }
+      const ordemGrupos = new Map(GRUPOS.map((g, idx) => [g.nome, idx]));
+      const grupos = Render.blocoBarras({
+        id: 'titulo-grupos',
+        titulo: 'Por grupo',
+        total: colecao.length,
+        linhas: Array.from(porGrupo.entries())
+          .sort((a, b) => b[1] - a[1] || ordemGrupos.get(a[0]) - ordemGrupos.get(b[0]))
+          .map(([nome, qtd]) => ({ nome, qtd, vars: { '--cat': MAPA_GRUPOS.get(nome).cor } })),
+        vazio: 'Escolha a série dos seus Funkos para ver a coleção dividida por grupo: anime, filmes, games e outros.',
+        rodape: semSerie && comSerie.length ? el('p', { class: 'bloco-nota', text: `${Util.plural(semSerie, 'Funko está', 'Funkos estão')} sem série.` }) : null,
+      });
+
+      const linhasSerie = Array.from(porSerie.values()).sort((a, b) => b.qtd - a.qtd || Series.porNome(a, b));
+      const LIMITE = 8;
+      const visiveisSerie = Estado.dashTodasSeries ? linhasSerie : linhasSerie.slice(0, LIMITE);
+      const nRegistro = Estado.listas.series.length;
+      const series = Render.blocoBarras({
+        id: 'titulo-series',
+        titulo: 'Por série',
+        total: colecao.length,
+        linhas: visiveisSerie.map((x) => ({ nome: x.nome, qtd: x.qtd, vars: { '--cat': MAPA_GRUPOS.get(x.grupo).cor } })),
+        vazio: 'Nenhum Funko da coleção tem série ainda. Edite um Funko e escolha a série dele.',
+        rodape: el('div', { class: 'bloco-rodape' },
+          linhasSerie.length > LIMITE ? el('button', {
+            type: 'button', class: 'btn btn-secundario btn-largo', 'aria-expanded': String(Estado.dashTodasSeries),
+            on: { click: () => { Estado.dashTodasSeries = !Estado.dashTodasSeries; Render.dashboard(); } },
+          }, Estado.dashTodasSeries ? 'Mostrar só as principais' : `Mostrar todas as ${linhasSerie.length} séries`) : null,
+          el('button', {
+            type: 'button', class: 'btn btn-secundario btn-largo',
+            on: { click: () => Modais.gerenciarSeries() },
+          }, nRegistro ? `Gerenciar séries (${nRegistro})` : 'Gerenciar séries')),
+      });
 
       const ultimo = Storage.lerTexto(CHAVE_ULTIMO_BACKUP);
       const dataUltimo = ultimo && !Number.isNaN(new Date(ultimo).getTime())
@@ -1404,7 +1957,21 @@ select.entrada {
           el('button', { type: 'button', class: 'btn btn-secundario btn-largo', on: { click: Backup.escolherArquivo } }, Util.icone('importar'), 'Importar backup')),
       );
 
-      dom.dashboard.replaceChildren(contagens, extrato, categorias, backup);
+      dom.dashboard.replaceChildren(contagens, extrato, categorias, grupos, series, backup);
+    },
+
+    blocoBarras({ id, titulo, total, linhas, vazio, rodape = null }) {
+      const itens = linhas.map(({ nome, qtd, vars }) => {
+        const frac = total ? qtd / total : 0;
+        return el('li', { class: 'categoria-linha', vars },
+          el('span', { class: 'categoria-nome', text: nome }),
+          el('span', { class: 'categoria-num' }, el('strong', { text: String(qtd) }), ` (${Util.percentual.format(frac)})`),
+          el('div', { class: 'barra', 'aria-hidden': 'true' }, el('span', { vars: { width: `${(frac * 100).toFixed(1)}%` } })));
+      });
+      return el('section', { class: 'bloco', 'aria-labelledby': id },
+        el('h2', { id, text: titulo }),
+        itens.length ? el('ul', { class: 'categorias-lista' }, itens) : el('p', { class: 'bloco-texto', text: vazio }),
+        rodape);
     },
   };
 
@@ -1466,7 +2033,12 @@ select.entrada {
       };
 
       const teclado = (e) => {
-        if (e.key === 'Escape') { e.preventDefault(); controle.fechar(); return; }
+        if (e.key === 'Escape') {
+          if (e.target instanceof Element && e.target.getAttribute('aria-expanded') === 'true') return;
+          e.preventDefault();
+          controle.fechar();
+          return;
+        }
         if (e.key !== 'Tab') return;
         const focaveis = Array.from(painel.querySelectorAll('button, input, select, [tabindex]:not([tabindex="-1"])'))
           .filter((n) => !n.disabled && n.offsetParent !== null);
@@ -1538,6 +2110,275 @@ select.entrada {
       return { campo, valor: () => atual };
     },
 
+    campoFoto(inicial) {
+      const SEM_IMAGEM = 'Não há imagem copiada. Copie uma foto e tente de novo.';
+      let foto = inicial;
+      let ocupado = false;
+
+      const preview = el('div', { class: 'foto-preview' });
+      const seletor = el('input', { type: 'file', accept: 'image/*', hidden: true, 'aria-hidden': 'true', tabindex: '-1' });
+      const btnColar = el('button', { type: 'button', class: 'btn btn-secundario btn-foto' });
+      const btnFototeca = el('button', { type: 'button', class: 'btn btn-secundario btn-foto' });
+      const btnRemover = el('button', { type: 'button', class: 'btn btn-remover-foto', text: 'Remover foto' });
+      const dica = el('p', { class: 'foto-dica', 'aria-live': 'polite', hidden: true });
+      const area = el('div', {
+        class: 'area-colar', contenteditable: 'true', role: 'textbox', inputmode: 'none',
+        'aria-label': 'Área para colar a foto', 'data-placeholder': 'Toque e segure aqui e escolha Colar', hidden: true,
+      });
+
+      const desenhar = () => {
+        preview.replaceChildren(foto ? el('img', { src: foto, alt: 'Foto do Funko' }) : Util.icone('camera'));
+        btnColar.replaceChildren(Util.icone('colar'), 'Colar foto');
+        btnFototeca.replaceChildren(Util.icone('camera'), 'Escolher da fototeca');
+        btnColar.disabled = false;
+        btnFototeca.disabled = false;
+        btnRemover.hidden = !foto;
+      };
+
+      const mostrarArea = (mensagem) => {
+        dica.textContent = mensagem;
+        dica.hidden = false;
+        area.hidden = false;
+        area.focus({ preventScroll: true });
+        area.scrollIntoView({ block: 'nearest' });
+      };
+
+      const processar = async (imagem) => {
+        if (ocupado) return;
+        if (imagem.type && !imagem.type.startsWith('image/')) {
+          Toast.erro('Esse arquivo não é uma imagem. Escolha uma foto.');
+          return;
+        }
+        ocupado = true;
+        btnColar.disabled = true;
+        btnFototeca.disabled = true;
+        btnFototeca.replaceChildren('Preparando foto…');
+        try {
+          foto = await Util.fotoParaJpeg(imagem);
+          area.hidden = true;
+          dica.hidden = true;
+        } catch (e) {
+          Toast.erro('Não foi possível abrir essa imagem. Tente outra foto em JPEG ou PNG.');
+        }
+        ocupado = false;
+        desenhar();
+      };
+
+      btnFototeca.addEventListener('click', () => seletor.click());
+      btnRemover.addEventListener('click', () => { foto = null; desenhar(); btnFototeca.focus(); });
+      seletor.addEventListener('change', () => {
+        const arquivo = seletor.files && seletor.files[0];
+        seletor.value = '';
+        if (arquivo) processar(arquivo);
+      });
+
+      btnColar.addEventListener('click', async () => {
+        if (ocupado) return;
+        if (!navigator.clipboard || typeof navigator.clipboard.read !== 'function') {
+          mostrarArea('Este navegador não deixa o app ler o que você copiou. Toque e segure na área abaixo e escolha Colar.');
+          return;
+        }
+        let itens;
+        try {
+          itens = await navigator.clipboard.read();
+        } catch (e) {
+          mostrarArea(e && e.name === 'NotAllowedError'
+            ? 'O navegador não deu acesso ao que você copiou. Toque e segure na área abaixo e escolha Colar, ou use ⌘V.'
+            : 'Não deu para ler o que você copiou. Toque e segure na área abaixo e escolha Colar.');
+          return;
+        }
+        for (const item of itens) {
+          const tipo = item.types.find((t) => t.startsWith('image/'));
+          if (tipo) {
+            processar(await item.getType(tipo));
+            return;
+          }
+        }
+        Toast.erro(SEM_IMAGEM);
+        mostrarArea('Se a foto estiver copiada em outro app, toque e segure na área abaixo e escolha Colar.');
+      });
+
+      // Ouve ⌘V / Ctrl+V e o "Colar" do iPhone enquanto o formulário estiver aberto.
+      const aoColar = (e) => {
+        const naArea = e.target instanceof Element && e.target.closest('.area-colar');
+        const imagem = Util.imagemDoColar(e);
+        if (!imagem) {
+          if (naArea) { e.preventDefault(); Toast.erro(SEM_IMAGEM); }
+          return;
+        }
+        e.preventDefault();
+        processar(imagem);
+      };
+      area.addEventListener('input', () => { area.textContent = ''; });
+      desenhar();
+
+      const campo = el('div', { class: 'campo' },
+        el('span', { class: 'campo-rotulo', text: 'Foto' }),
+        el('div', { class: 'foto-area' }, preview, el('div', { class: 'foto-botoes' }, btnColar, btnFototeca, btnRemover)),
+        dica, area, seletor);
+
+      return {
+        campo,
+        seletor,
+        valor: () => foto,
+        ligar: () => document.addEventListener('paste', aoColar),
+        desligar: () => document.removeEventListener('paste', aoColar),
+      };
+    },
+
+    campoSerie(inicial) {
+      const id = 'f-serie';
+      const input = el('input', {
+        id, class: 'entrada', type: 'text', value: inicial || '', placeholder: 'Ex.: Star Wars', maxlength: SERIE_MAX,
+        autocapitalize: 'words', autocomplete: 'off', autocorrect: 'off', spellcheck: 'false', enterkeyhint: 'next',
+        role: 'combobox', 'aria-autocomplete': 'list', 'aria-expanded': 'false', 'aria-controls': `${id}-lista`,
+      });
+      const lista = el('ul', { id: `${id}-lista`, class: 'combo-lista', role: 'listbox', 'aria-label': 'Sugestões de série', hidden: true });
+      const grupo = el('select', { id: `${id}-grupo`, class: 'entrada' }, GRUPOS.map((g) => el('option', { value: g.nome, text: g.nome })));
+      grupo.value = GRUPO_PADRAO;
+      const textoNovo = el('p');
+      const novo = el('div', { class: 'combo-novo', hidden: true },
+        textoNovo, el('label', { for: `${id}-grupo`, text: 'Grupo da nova série' }), grupo);
+      const erro = el('p', { class: 'erro-campo', id: `${id}-erro`, hidden: true });
+      const reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      let opcoes = [];
+      let ativa = -1;
+      let fecharTimer = null;
+
+      const rolar = () => {
+        input.scrollIntoView({ block: 'start', behavior: reduzirMovimento ? 'auto' : 'smooth' });
+      };
+      const fechar = () => {
+        lista.hidden = true;
+        input.setAttribute('aria-expanded', 'false');
+        input.removeAttribute('aria-activedescendant');
+        ativa = -1;
+        atualizarNovo();
+      };
+      const marcarAtiva = (indice) => {
+        ativa = indice;
+        lista.querySelectorAll('[role="option"]').forEach((op, i) => op.setAttribute('aria-selected', String(i === ativa)));
+        const atual = lista.querySelector(`#${id}-op-${ativa}`);
+        if (atual) {
+          input.setAttribute('aria-activedescendant', atual.id);
+          atual.scrollIntoView({ block: 'nearest' });
+        } else {
+          input.removeAttribute('aria-activedescendant');
+        }
+      };
+      const atualizarNovo = () => {
+        const nome = Util.limparSerie(input.value);
+        const precisa = Boolean(nome) && !Series.doRegistro(nome) && !Series.doCatalogo(nome);
+        novo.hidden = !precisa || !lista.hidden;
+        if (precisa) textoNovo.textContent = `“${nome}” vai entrar como nova série.`;
+      };
+      const escolher = (indice) => {
+        const op = opcoes[indice];
+        if (!op) return;
+        if (!op.nova) input.value = op.nome;
+        fechar();
+        atualizarNovo();
+        if (op.nova) grupo.focus();
+      };
+      const montar = () => {
+        const termo = Util.chaveSerie(input.value);
+        const uso = Series.uso();
+        const registradas = new Set(Estado.listas.series.map((x) => Util.chaveSerie(x.nome)));
+        const minhas = Estado.listas.series
+          .filter((x) => !termo || Util.chaveSerie(x.nome).includes(termo))
+          .sort((a, b) => (uso.get(Util.chaveSerie(b.nome)) || 0) - (uso.get(Util.chaveSerie(a.nome)) || 0) || Series.porNome(a, b))
+          .slice(0, 8);
+        const sugestoes = Series.catalogo()
+          .filter((x) => !registradas.has(x.chave) && (!termo || x.chave.includes(termo)))
+          .slice(0, 8);
+        const exata = Boolean(termo) && (registradas.has(termo) || Series.catalogo().some((x) => x.chave === termo));
+
+        opcoes = [];
+        const filhos = [];
+        const opcao = (dados, conteudo, classe) => {
+          const indice = opcoes.length;
+          opcoes.push(dados);
+          return el('li', {
+            id: `${id}-op-${indice}`, class: `combo-opcao${classe ? ` ${classe}` : ''}`, role: 'option', 'aria-selected': 'false',
+            on: {
+              pointerdown: (e) => e.preventDefault(),
+              click: () => escolher(indice),
+            },
+          }, conteudo);
+        };
+        const linhaSerie = (x) => opcao(x, [
+          el('span', { class: 'combo-nome', text: x.nome }),
+          el('span', { class: 'tag-grupo', vars: Util.varsGrupo(x.grupo), text: x.grupo }),
+        ]);
+        if (minhas.length) {
+          filhos.push(el('li', { class: 'combo-titulo', role: 'presentation', text: 'Suas séries' }));
+          minhas.forEach((x) => filhos.push(linhaSerie(x)));
+        }
+        if (sugestoes.length) {
+          filhos.push(el('li', { class: 'combo-titulo', role: 'presentation', text: 'Sugestões' }));
+          sugestoes.forEach((x) => filhos.push(linhaSerie(x)));
+        }
+        if (termo && !exata) {
+          const nome = Util.limparSerie(input.value);
+          filhos.push(opcao({ nova: true, nome }, [Util.icone('mais'), el('span', { text: `Adicionar “${nome}” como nova série` })], 'combo-opcao-nova'));
+        }
+        lista.replaceChildren(...filhos);
+        ativa = -1;
+        input.removeAttribute('aria-activedescendant');
+        if (opcoes.length) {
+          lista.hidden = false;
+          input.setAttribute('aria-expanded', 'true');
+        } else {
+          fechar();
+        }
+        atualizarNovo();
+      };
+
+      input.addEventListener('input', montar);
+      input.addEventListener('focus', () => {
+        clearTimeout(fecharTimer);
+        montar();
+        setTimeout(rolar, 300);
+      });
+      input.addEventListener('blur', () => { fecharTimer = setTimeout(fechar, 150); });
+      input.addEventListener('keydown', (e) => {
+        const aberta = !lista.hidden;
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (!aberta) montar();
+          if (opcoes.length) marcarAtiva((ativa + 1) % opcoes.length);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (!aberta) montar();
+          if (opcoes.length) marcarAtiva(ativa <= 0 ? opcoes.length - 1 : ativa - 1);
+        } else if (e.key === 'Enter' && aberta && ativa >= 0) {
+          e.preventDefault();
+          escolher(ativa);
+        } else if (e.key === 'Escape' && aberta) {
+          e.preventDefault();
+          fechar();
+        }
+      });
+      if (window.visualViewport) {
+        const aoRedimensionar = () => { if (document.activeElement === input) rolar(); };
+        window.visualViewport.addEventListener('resize', aoRedimensionar);
+        input.addEventListener('remover-ouvintes', () => window.visualViewport.removeEventListener('resize', aoRedimensionar));
+      }
+      atualizarNovo();
+
+      const campo = el('div', { class: 'campo combo' },
+        el('label', { for: id, text: 'Série' }), input, lista, novo, erro);
+      return {
+        campo,
+        input,
+        erro,
+        valor: () => Util.limparSerie(input.value),
+        grupoNovo: () => grupo.value,
+        desligar: () => input.dispatchEvent(new Event('remover-ouvintes')),
+      };
+    },
+
     marcarErro(ref, mensagem) {
       if (mensagem) {
         ref.erro.textContent = mensagem;
@@ -1561,11 +2402,10 @@ select.entrada {
     formulario(tipo, item) {
       const editando = Boolean(item);
       const colecao = tipo === 'colecao';
-      let foto = item ? item.foto : null;
 
       const numero = Modais.campoTexto({ id: 'f-numero', rotulo: 'Número', valor: item && item.numero, placeholder: '001', maxlength: 12, inputmode: 'numeric' });
       const nome = Modais.campoTexto({ id: 'f-nome', rotulo: 'Nome', valor: item && item.nome, obrigatorio: true, placeholder: 'Ex.: Darth Vader', maxlength: 120, autocapitalize: 'words' });
-      const serie = Modais.campoTexto({ id: 'f-serie', rotulo: 'Série', valor: item && item.serie, placeholder: 'Ex.: Star Wars', maxlength: 120, autocapitalize: 'words' });
+      const serie = Modais.campoSerie(item ? item.serie : '');
 
       const select = el('select', { id: 'f-categoria', class: 'entrada', 'aria-required': 'true' },
         el('option', { value: '', text: 'Escolha' }),
@@ -1582,47 +2422,14 @@ select.entrada {
       const pago = colecao ? Modais.campoValor({ id: 'f-pago', rotulo: 'Valor pago', valor: item && item.valorPago }) : null;
       const estimado = colecao ? Modais.campoValor({ id: 'f-estimado', rotulo: 'Valor estimado', valor: item && item.valorEstimado }) : null;
 
-      const preview = el('div', { class: 'foto-preview' });
-      const seletor = el('input', { type: 'file', accept: 'image/*', hidden: true, 'aria-hidden': 'true', tabindex: '-1' });
-      const btnFoto = el('button', { type: 'button', class: 'btn btn-secundario' });
-      const btnRemover = el('button', { type: 'button', class: 'btn btn-remover-foto', text: 'Remover foto' });
-      const desenharFoto = () => {
-        preview.replaceChildren(foto ? el('img', { src: foto, alt: 'Foto do Funko' }) : Util.icone('camera'));
-        btnFoto.replaceChildren(Util.icone('camera'), foto ? 'Trocar foto' : 'Adicionar foto');
-        btnRemover.hidden = !foto;
-      };
-      btnFoto.addEventListener('click', () => seletor.click());
-      btnRemover.addEventListener('click', () => { foto = null; desenharFoto(); btnFoto.focus(); });
-      seletor.addEventListener('change', async () => {
-        const arquivo = seletor.files && seletor.files[0];
-        seletor.value = '';
-        if (!arquivo) return;
-        if (arquivo.type && !arquivo.type.startsWith('image/')) {
-          Toast.erro('Esse arquivo não é uma imagem. Escolha uma foto.');
-          return;
-        }
-        btnFoto.disabled = true;
-        btnFoto.replaceChildren('Preparando foto…');
-        try {
-          foto = await Util.fotoParaJpeg(arquivo);
-        } catch (e) {
-          Toast.erro('Não foi possível abrir essa imagem. Tente outra foto em JPEG ou PNG.');
-        }
-        btnFoto.disabled = false;
-        desenharFoto();
-      });
-      desenharFoto();
-
-      const campoFoto = el('div', { class: 'campo' },
-        el('span', { class: 'campo-rotulo', text: 'Foto' }),
-        el('div', { class: 'foto-area' }, preview, el('div', { class: 'foto-botoes' }, btnFoto, btnRemover)), seletor);
+      const campoFoto = Modais.campoFoto(item ? item.foto : null);
 
       const nota = colecao ? null : Modais.campoDesejo(item ? (item.desejo || null) : DESEJO_PADRAO);
 
       const btnSalvar = el('button', { type: 'submit', class: 'btn btn-primario', text: editando ? 'Salvar alterações' : (colecao ? 'Salvar Funko' : 'Salvar na wishlist') });
       let folha;
       const form = el('form', { class: 'form', novalidate: true },
-        campoFoto,
+        campoFoto.campo,
         el('div', { class: 'linha-2' }, numero.campo, campoCategoria),
         nome.campo,
         serie.campo,
@@ -1646,14 +2453,16 @@ select.entrada {
         const dados = {
           numero: numero.input.value.trim(),
           nome: nome.input.value.trim(),
-          serie: serie.input.value.trim(),
+          serie: serie.valor(),
           categoria: select.value,
-          foto,
+          foto: campoFoto.valor(),
           valorPago,
           valorEstimado,
           desejo: colecao ? null : nota.valor(),
         };
-        const ok = editando ? Estado.atualizar(tipo, item.id, dados) : Estado.adicionar(tipo, dados);
+        const ok = editando
+          ? Estado.atualizar(tipo, item.id, dados, serie.grupoNovo())
+          : Estado.adicionar(tipo, dados, serie.grupoNovo());
         if (!ok) return;
         folha.fechar();
         Toast.ok(editando ? 'Alterações salvas' : (colecao ? 'Funko salvo na coleção' : 'Funko salvo na wishlist'));
@@ -1665,7 +2474,12 @@ select.entrada {
 
       const titulo = editando ? 'Editar Funko' : (colecao ? 'Novo Funko na coleção' : 'Novo Funko na wishlist');
       if (!editando) nome.input.setAttribute('data-foco-inicial', '');
-      folha = Folha.abrir({ rotulo: titulo, conteudo: [el('h2', { text: titulo }), form] });
+      campoFoto.ligar();
+      folha = Folha.abrir({
+        rotulo: titulo,
+        conteudo: [el('h2', { text: titulo }), form],
+        aoFechar: () => { campoFoto.desligar(); serie.desligar(); },
+      });
     },
 
     acoes(tipo, id) {
@@ -1691,6 +2505,173 @@ select.entrada {
         el('button', { type: 'button', class: 'acao acao-cancelar', text: 'Cancelar', on: { click: () => folha.fechar() } }),
       ];
       folha = Folha.abrir({ rotulo: `Ações para ${item.nome}`, conteudo, acoes: true });
+    },
+
+    gerenciarSeries() {
+      const uso = Series.uso();
+      const series = Estado.listas.series;
+      const grupos = GRUPOS
+        .map((g) => ({ grupo: g.nome, lista: series.filter((x) => x.grupo === g.nome).sort(Series.porNome) }))
+        .filter((g) => g.lista.length);
+      let folha;
+      const linha = (x) => {
+        const n = uso.get(Util.chaveSerie(x.nome)) || 0;
+        const qtd = n ? Util.plural(n, 'Funko', 'Funkos') : 'Nenhum Funko';
+        return el('button', {
+          type: 'button', class: 'acao serie-linha', 'aria-label': `${x.nome}, ${qtd}. Abrir ações`,
+          on: { click: () => Modais.acoesSerie(x.id) },
+        }, el('span', { class: 'serie-nome', text: x.nome }), el('span', { class: 'serie-qtd', text: qtd }), Util.icone('reticencias'));
+      };
+      const conteudo = [
+        el('h2', { text: 'Séries' }),
+        el('p', {
+          class: 'folha-texto',
+          text: series.length
+            ? `${Util.plural(series.length, 'série', 'séries')} em ${Util.plural(grupos.length, 'grupo', 'grupos')}. Toque numa série para renomear, mudar de grupo, mesclar ou excluir.`
+            : 'Nenhuma série ainda. Quando você salvar um Funko com série, ela aparece aqui.',
+        }),
+        grupos.map((g) => el('section', { class: 'series-grupo', vars: Util.varsGrupo(g.grupo), 'aria-label': g.grupo },
+          el('h3', { text: g.grupo }),
+          el('div', { class: 'grupo-acoes' }, g.lista.map(linha)))),
+        el('button', { type: 'button', class: 'btn btn-secundario btn-largo series-fechar', text: 'Fechar', on: { click: () => folha.fechar() } }),
+      ];
+      folha = Folha.abrir({ rotulo: 'Gerenciar séries', conteudo });
+    },
+
+    acoesSerie(id) {
+      const serie = Series.porId(id);
+      if (!serie) return;
+      let folha;
+      const acao = (icone, texto, fn, perigo) => el('button', {
+        type: 'button', class: `acao${perigo ? ' acao-perigo' : ''}`,
+        on: { click: () => { folha.fechar(true); fn(); } },
+      }, Util.icone(icone), texto);
+      const conteudo = [
+        el('div', { class: 'grupo-acoes' },
+          el('div', { class: 'grupo-acoes-titulo', text: `${serie.nome}, em ${serie.grupo}` }),
+          acao('editar', 'Renomear', () => Modais.renomearSerie(id)),
+          acao('pasta', 'Mudar de grupo', () => Modais.grupoSerie(id)),
+          acao('mesclar', 'Mesclar com outra série', () => Modais.mesclarSerie(id)),
+          acao('lixeira', 'Excluir do registro', () => Modais.excluirSerie(id), true)),
+        el('button', { type: 'button', class: 'acao acao-cancelar', text: 'Voltar', on: { click: () => Modais.gerenciarSeries() } }),
+      ];
+      folha = Folha.abrir({ rotulo: `Ações para ${serie.nome}`, conteudo, acoes: true });
+    },
+
+    folhaSerie({ titulo, texto, campo, botao, aoEnviar }) {
+      const form = el('form', { class: 'form', novalidate: true },
+        texto ? el('p', { class: 'folha-texto', text: texto }) : null,
+        campo,
+        el('div', { class: 'form-botoes' },
+          el('button', { type: 'button', class: 'btn btn-secundario', text: 'Voltar', on: { click: () => Modais.gerenciarSeries() } }),
+          el('button', { type: 'submit', class: 'btn btn-primario', text: botao })));
+      form.addEventListener('submit', (e) => { e.preventDefault(); aoEnviar(); });
+      Folha.abrir({ rotulo: titulo, conteudo: [el('h2', { text: titulo }), form] });
+    },
+
+    renomearSerie(id) {
+      const serie = Series.porId(id);
+      if (!serie) return;
+      const n = Series.contar(serie.nome);
+      const ref = Modais.campoTexto({ id: 's-nome', rotulo: 'Novo nome', valor: serie.nome, obrigatorio: true, maxlength: SERIE_MAX, autocapitalize: 'words' });
+      ref.input.setAttribute('data-foco-inicial', '');
+      ref.input.addEventListener('input', () => Modais.marcarErro(ref, null));
+      Modais.folhaSerie({
+        titulo: `Renomear ${serie.nome}`,
+        texto: n ? `${Util.plural(n, 'Funko passa', 'Funkos passam')} a usar o novo nome, na coleção e na wishlist.` : 'Nenhum Funko usa essa série ainda.',
+        campo: ref.campo,
+        botao: 'Salvar nome',
+        aoEnviar: () => {
+          const novo = Util.limparSerie(ref.input.value);
+          const outra = Series.doRegistro(novo);
+          if (!novo) Modais.marcarErro(ref, 'Digite o nome da série.');
+          else if (outra && outra.id !== id) Modais.marcarErro(ref, `Já existe a série “${outra.nome}”. Use Mesclar com outra série para juntar as duas.`);
+          else if (novo === serie.nome) { Modais.gerenciarSeries(); return; }
+          else if (Estado.renomearSerie(id, novo)) { Toast.ok('Série renomeada'); Modais.gerenciarSeries(); return; }
+          else return;
+          ref.input.focus();
+        },
+      });
+    },
+
+    grupoSerie(id) {
+      const serie = Series.porId(id);
+      if (!serie) return;
+      const select = el('select', { id: 's-grupo', class: 'entrada', 'data-foco-inicial': true }, GRUPOS.map((g) => el('option', { value: g.nome, text: g.nome })));
+      select.value = serie.grupo;
+      Modais.folhaSerie({
+        titulo: `Grupo de ${serie.nome}`,
+        texto: 'O grupo organiza as séries por tipo de obra nos filtros e no Dashboard.',
+        campo: el('div', { class: 'campo' }, el('label', { for: 's-grupo', text: 'Grupo' }), select),
+        botao: 'Salvar grupo',
+        aoEnviar: () => {
+          if (select.value === serie.grupo) { Modais.gerenciarSeries(); return; }
+          if (Estado.mudarGrupoSerie(id, select.value)) { Toast.ok('Grupo alterado'); Modais.gerenciarSeries(); }
+        },
+      });
+    },
+
+    mesclarSerie(id) {
+      const serie = Series.porId(id);
+      if (!serie) return;
+      const outras = Estado.listas.series.filter((x) => x.id !== id);
+      if (!outras.length) {
+        Toast.erro('Não há outra série para mesclar. Salve um Funko com outra série primeiro.');
+        Modais.gerenciarSeries();
+        return;
+      }
+      const n = Series.contar(serie.nome);
+      const select = el('select', { id: 's-destino', class: 'entrada', 'data-foco-inicial': true },
+        GRUPOS.map((g) => {
+          const doGrupo = outras.filter((x) => x.grupo === g.nome).sort(Series.porNome);
+          return doGrupo.length ? el('optgroup', { label: g.nome }, doGrupo.map((x) => el('option', { value: x.id, text: x.nome }))) : null;
+        }));
+      Modais.folhaSerie({
+        titulo: `Mesclar ${serie.nome}`,
+        texto: `${n ? `${Util.plural(n, 'Funko de', 'Funkos de')} “${serie.nome}” ${n === 1 ? 'passa' : 'passam'} para a série escolhida` : 'Nenhum Funko usa essa série'}, e “${serie.nome}” sai do registro.`,
+        campo: el('div', { class: 'campo' }, el('label', { for: 's-destino', text: 'Juntar com' }), select),
+        botao: 'Continuar',
+        aoEnviar: async () => {
+          const destino = Series.porId(select.value);
+          if (!destino) return;
+          const sim = await Modais.confirmar({
+            titulo: `Mesclar ${serie.nome} em ${destino.nome}?`,
+            texto: `${n ? `${Util.plural(n, 'Funko passa', 'Funkos passam')} para “${destino.nome}”` : 'Nenhum Funko muda'} e “${serie.nome}” sai do registro. Não dá para desfazer.`,
+            confirmar: 'Mesclar séries',
+            perigo: true,
+          });
+          if (sim && Estado.mesclarSeries(id, destino.id)) Toast.ok('Séries mescladas');
+          Modais.gerenciarSeries();
+        },
+      });
+    },
+
+    async excluirSerie(id) {
+      const serie = Series.porId(id);
+      if (!serie) return;
+      const n = Series.contar(serie.nome);
+      if (n) {
+        let folha;
+        folha = Folha.abrir({
+          rotulo: 'Não dá para excluir ainda',
+          conteudo: [
+            el('h2', { text: 'Não dá para excluir ainda' }),
+            el('p', { class: 'folha-texto', text: `“${serie.nome}” está em ${Util.plural(n, 'Funko', 'Funkos')}. Mescle com outra série: os Funkos passam para ela e “${serie.nome}” sai do registro.` }),
+            el('div', { class: 'form-botoes' },
+              el('button', { type: 'button', class: 'btn btn-secundario', text: 'Voltar', 'data-foco-inicial': true, on: { click: () => Modais.gerenciarSeries() } }),
+              el('button', { type: 'button', class: 'btn btn-primario', text: 'Mesclar com outra série', on: { click: () => { folha.fechar(true); Modais.mesclarSerie(id); } } })),
+          ],
+        });
+        return;
+      }
+      const sim = await Modais.confirmar({
+        titulo: `Excluir ${serie.nome}?`,
+        texto: 'Nenhum Funko usa essa série. Ela sai da sua lista de séries.',
+        confirmar: 'Excluir série',
+        perigo: true,
+      });
+      if (sim && Estado.excluirSerie(id)) Toast.ok('Série excluída');
+      Modais.gerenciarSeries();
     },
 
     confirmar({ titulo, texto, confirmar, perigo }) {
@@ -1758,10 +2739,11 @@ select.entrada {
     montarArquivo() {
       const dados = {
         app: 'funko-tracker',
-        versao: 1,
+        versao: 2,
         exportadoEm: new Date().toISOString(),
         colecao: Estado.listas.colecao,
         wishlist: Estado.listas.wishlist,
+        series: Estado.listas.series,
       };
       const nome = `funko-tracker-backup-${Util.hoje()}.json`;
       const json = JSON.stringify(dados, null, 2);
@@ -1822,10 +2804,21 @@ select.entrada {
         Toast.erro('Esse arquivo não é um backup válido. Escolha o .json exportado pelo Funko Tracker.');
         return;
       }
+      const versao = dados.versao === undefined ? 1 : Number(dados.versao);
+      if (versao !== 1 && versao !== 2) {
+        Toast.erro(versao > 2
+          ? 'Esse backup veio de uma versão mais nova do app. Atualize o app e tente de novo.'
+          : 'Esse arquivo não é um backup válido. Escolha o .json exportado pelo Funko Tracker.');
+        return;
+      }
       const brutoC = Array.isArray(dados.colecao) ? dados.colecao : [];
       const brutoW = Array.isArray(dados.wishlist) ? dados.wishlist : [];
       const { colecao, wishlist } = Storage.normalizarListas(brutoC, brutoW);
       const ignorados = brutoC.length + brutoW.length - colecao.length - wishlist.length;
+      const brutasS = versao === 2 && Array.isArray(dados.series) ? dados.series : [];
+      const registradas = Storage.normalizarSeries(brutasS);
+      const series = Storage.completarSeries(registradas, colecao, wishlist);
+      const seriesIgnoradas = brutasS.length - registradas.length;
       if (!colecao.length && !wishlist.length && ignorados > 0) {
         Toast.erro('Nenhum Funko desse backup pôde ser lido. Confira se o arquivo é do Funko Tracker.');
         return;
@@ -1833,9 +2826,11 @@ select.entrada {
 
       const atuais = Estado.listas.colecao.length + Estado.listas.wishlist.length;
       const partes = [
-        `O backup tem ${Util.plural(colecao.length, 'Funko', 'Funkos')} na coleção e ${wishlist.length} na wishlist.`,
-        atuais ? `Os ${Util.plural(atuais, 'Funko', 'Funkos')} de agora serão apagados.` : '',
+        `O backup tem ${Util.plural(colecao.length, 'Funko', 'Funkos')} na coleção, ${wishlist.length} na wishlist e ${Util.plural(series.length, 'série', 'séries')}.`,
+        versao === 1 && series.length ? 'É um backup antigo: as séries foram montadas a partir dos Funkos.' : '',
+        atuais ? `Seus dados de agora (${Util.plural(atuais, 'Funko', 'Funkos')}${Estado.listas.series.length ? ` e ${Util.plural(Estado.listas.series.length, 'série', 'séries')}` : ''}) serão substituídos.` : '',
         ignorados ? `${Util.plural(ignorados, 'item inválido será ignorado', 'itens inválidos serão ignorados')}.` : '',
+        seriesIgnoradas > 0 ? `${Util.plural(seriesIgnoradas, 'série inválida ou repetida será ignorada', 'séries inválidas ou repetidas serão ignoradas')}.` : '',
       ].filter(Boolean);
       const sim = await Modais.confirmar({
         titulo: 'Substituir seus dados?',
@@ -1843,7 +2838,7 @@ select.entrada {
         confirmar: 'Substituir dados',
         perigo: atuais > 0,
       });
-      if (sim && Estado.substituirTudo(colecao, wishlist)) Toast.ok('Backup importado');
+      if (sim && Estado.substituirTudo(colecao, wishlist, series)) Toast.ok('Backup importado');
     },
   };
 
@@ -1944,9 +2939,11 @@ select.entrada {
      ======================================================= */
   function iniciar() {
     Render.montar();
-    const { colecao, wishlist } = Storage.carregarTudo();
+    const { colecao, wishlist, series, gravarSeries } = Storage.carregarTudo();
     Estado.listas.colecao = colecao;
     Estado.listas.wishlist = wishlist;
+    Estado.listas.series = series;
+    if (gravarSeries) Storage.gravar(CHAVES.series, series);
     Interacoes.ligar();
     Render.tudo();
     if (!Storage.disponivel()) {
