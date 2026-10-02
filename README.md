@@ -12,7 +12,7 @@
 <p align="center">
   <img src="docs/colecao.png" width="200" alt="Coleção em grade com cards no formato de caixa de Funko Pop">
   &nbsp;
-  <img src="docs/wishlist.png" width="200" alt="Wishlist com busca e filtro por categoria">
+  <img src="docs/wishlist.png" width="200" alt="Wishlist com nota de desejo em estrelas">
   &nbsp;
   <img src="docs/dashboard.png" width="200" alt="Dashboard com valor pago, valor estimado e valorização">
   &nbsp;
@@ -22,7 +22,7 @@
 ## O que o app faz
 
 - **Coleção:** cada Funko vira um card no formato da caixa do Pop, com foto, número, série, categoria e quanto você pagou e quanto ele vale.
-- **Wishlist:** anote os Funkos que você quer. Quando comprar, mova para a coleção e informe o valor pago.
+- **Wishlist:** anote os Funkos que você quer e dê uma nota de desejo de 1 a 5 estrelas. Ordene por “Maior desejo” para ver primeiro o que você mais quer. Quando comprar, mova para a coleção e informe o valor pago.
 - **Busca e filtro:** encontre pelo nome, pela série ou pelo número, e filtre por categoria (Chase, GITD, Flocked, Diamond e outras).
 - **Dashboard:** total pago, valor estimado, valorização da estante e quantos Funkos você tem de cada categoria.
 - **Fotos:** tire uma foto ou escolha da galeria. O app reduz a imagem para economizar espaço.
@@ -103,7 +103,7 @@ O service worker guarda os arquivos em cache. Para o iPhone baixar uma versão n
 1. Altere os arquivos.
 2. Em `service-worker.js`, aumente a versão do cache:
    ```js
-   const CACHE_NAME = 'funko-v2'; // era funko-v1
+   const CACHE_NAME = 'funko-v3'; // era funko-v2
    ```
 3. Se criar arquivos novos, inclua cada um na lista `ARQUIVOS` do mesmo arquivo, sempre com `./` na frente.
 4. Faça commit e push.

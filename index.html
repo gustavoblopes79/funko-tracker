@@ -226,6 +226,27 @@ img { display: block; max-width: 100%; }
 }
 .chip[aria-pressed="true"] .chip-ponto { background: var(--on-accent); }
 
+.ordenacao {
+  display: inline-flex;
+  margin: -2px var(--gutter-r) 14px var(--gutter-l);
+  padding: 3px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--linha);
+}
+.ordenacao button {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 11px;
+  background: none;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 600;
+}
+.ordenacao button[aria-pressed="true"] { background: var(--card); color: var(--text); }
+.ordenacao button:focus-visible { outline-offset: -2px; }
+
 /* =========================================================
    GRADE E CARD: a caixa do Funko Pop
    ========================================================= */
@@ -359,6 +380,15 @@ img { display: block; max-width: 100%; }
   font-size: 12px;
   font-weight: 700;
 }
+.estrelas {
+  margin-top: 8px;
+  font-size: 15px;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+.estrelas .cheias { color: var(--accent); }
+.estrelas .vazias { color: #4a4a4a; }
+
 .pop-valores {
   margin: 10px 0 0;
   padding-top: 8px;
@@ -607,6 +637,30 @@ select.entrada {
 .foto-botoes .btn { min-height: 44px; font-size: 15px; }
 .btn-remover-foto { background: none; color: var(--danger); border: 1px solid #3a3a3a; }
 
+.nota { border: 0; margin: 0; padding: 0; min-width: 0; }
+.nota legend { padding: 0; margin-bottom: 4px; font-size: 14px; font-weight: 600; color: #cfcfcf; }
+.nota-linha { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.nota-estrelas { display: flex; margin-left: -6px; }
+.nota-estrela {
+  position: relative;
+  width: 46px; height: 48px;
+  display: grid;
+  place-items: center;
+  color: #4a4a4a;
+  cursor: pointer;
+}
+.nota-estrela input {
+  position: absolute; inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.nota-estrela svg { width: 34px; height: 34px; transition: transform .2s var(--mola); }
+.nota-estrela.cheia { color: var(--accent); }
+.nota-estrela:has(input:checked) svg { transform: scale(1.12); }
+.nota-estrela:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 10px; }
+.nota-texto { color: var(--text); font-weight: 600; font-size: 15px; }
+
 .form-botoes { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; margin-top: 4px; }
 
 /* =========================================================
@@ -709,6 +763,8 @@ select.entrada {
   const FOTO_LADO_MAX = 800;
   const FOTO_QUALIDADE = 0.7;
   const TOQUE_LONGO_MS = 500;
+  const DESEJO_PADRAO = 3;
+  const DESEJO_TEXTOS = ['', 'Seria legal ter', 'Gostaria de ter', 'Quero', 'Quero muito', 'Preciso ter'];
 
   const ROTULOS = {
     colecao: { titulo: 'Coleção', adicionar: 'Adicionar Funko à coleção' },
@@ -733,6 +789,7 @@ select.entrada {
     exportar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5M5 13v7h14v-7"/></svg>',
     importar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7.5 10.5L12 15l4.5-4.5M5 13v7h14v-7"/></svg>',
     estante: '<svg viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-dasharray="7 5" aria-hidden="true"><rect x="18" y="8" width="60" height="48" rx="15"/><rect x="31" y="58" width="34" height="30" rx="9"/><circle cx="37" cy="33" r="4" fill="currentColor" stroke="none"/><circle cx="59" cy="33" r="4" fill="currentColor" stroke="none"/></svg>',
+    estrelaCheia: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.8l2.85 5.78 6.38.93-4.62 4.5 1.09 6.35L12 17.36l-5.7 3 1.09-6.35-4.62-4.5 6.38-.93z"/></svg>',
     estrela: '<svg viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" aria-hidden="true"><path d="M48 12l10.6 21.5 23.7 3.4-17.2 16.7 4.1 23.6L48 66l-21.2 11.2 4.1-23.6-17.2-16.7 23.7-3.4z" stroke-dasharray="7 5"/></svg>',
     lupa: '<svg viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><circle cx="42" cy="42" r="24"/><path d="M60 60l20 20M34 42h16"/></svg>',
   };
@@ -933,6 +990,11 @@ select.entrada {
       return typeof n === 'number' && Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : null;
     },
 
+    desejo(v) {
+      const n = Number(v);
+      return Number.isInteger(n) && n >= 1 && n <= 5 ? n : null;
+    },
+
     // Valida e normaliza um item lido do disco ou de um backup. Devolve null se não der para salvar.
     normalizar(bruto, tipo, idsVistos) {
       if (!bruto || typeof bruto !== 'object' || Array.isArray(bruto)) return null;
@@ -953,6 +1015,7 @@ select.entrada {
         foto,
         valorPago: tipo === 'colecao' ? Storage.numero(bruto.valorPago) : null,
         valorEstimado: tipo === 'colecao' ? Storage.numero(bruto.valorEstimado) : null,
+        desejo: tipo === 'wishlist' ? Storage.desejo(bruto.desejo) : null,
         dataCriacao: Number.isNaN(data.getTime()) ? new Date().toISOString() : data.toISOString(),
         tipo,
       };
@@ -978,7 +1041,7 @@ select.entrada {
     listas: { colecao: [], wishlist: [] },
     filtros: {
       colecao: { busca: '', categoria: null },
-      wishlist: { busca: '', categoria: null },
+      wishlist: { busca: '', categoria: null, ordem: 'recentes' },
     },
 
     buscar(tipo, id) {
@@ -1011,6 +1074,7 @@ select.entrada {
         ...dados,
         valorPago: tipo === 'colecao' ? dados.valorPago : null,
         valorEstimado: tipo === 'colecao' ? dados.valorEstimado : null,
+        desejo: tipo === 'wishlist' ? dados.desejo : null,
         dataCriacao: new Date().toISOString(),
         tipo,
       };
@@ -1034,6 +1098,7 @@ select.entrada {
         tipo: para,
         valorPago: para === 'colecao' ? valores.valorPago : null,
         valorEstimado: para === 'colecao' ? valores.valorEstimado : null,
+        desejo: null,
       };
       return Estado.persistir({
         [de]: Estado.listas[de].filter((i) => i.id !== id),
@@ -1046,12 +1111,14 @@ select.entrada {
     },
 
     visiveis(tipo) {
-      const { busca, categoria } = Estado.filtros[tipo];
+      const { busca, categoria, ordem } = Estado.filtros[tipo];
       const termo = Util.normalizarBusca(busca);
+      const porData = (a, b) => (a.dataCriacao < b.dataCriacao ? 1 : a.dataCriacao > b.dataCriacao ? -1 : 0);
+      const porDesejo = (a, b) => (b.desejo || 0) - (a.desejo || 0) || porData(a, b);
       return Estado.listas[tipo]
         .filter((i) => !categoria || i.categoria === categoria)
         .filter((i) => !termo || [i.nome, i.serie, i.numero].some((c) => Util.normalizarBusca(c).includes(termo)))
-        .sort((a, b) => (a.dataCriacao < b.dataCriacao ? 1 : a.dataCriacao > b.dataCriacao ? -1 : 0));
+        .sort(ordem === 'desejo' ? porDesejo : porData);
     },
   };
 
@@ -1126,14 +1193,23 @@ select.entrada {
       const vazio = el('div', { class: 'vazio', hidden: true });
 
       const barra = el('div', { class: 'barra-busca' }, el('div', { class: 'campo-busca' }, Util.icone('busca'), busca));
+      const criarOrdem = (valor, texto) => el('button', {
+        type: 'button', 'aria-pressed': 'false', dataset: { ordem: valor },
+        on: { click: () => { Estado.filtros[tipo].ordem = valor; Render.lista(tipo); } },
+      }, texto);
+      const ordenacao = tipo === 'wishlist'
+        ? el('div', { class: 'ordenacao', role: 'group', 'aria-label': 'Ordenar wishlist' },
+          criarOrdem('recentes', 'Mais recentes'), criarOrdem('desejo', 'Maior desejo'))
+        : null;
       painel.append(
         barra,
         chips,
+        ordenacao,
         grade,
         vazio,
       );
       Interacoes.ligarCards(grade, tipo);
-      return { barra, busca, chips, grade, vazio };
+      return { barra, busca, chips, ordenacao, grade, vazio };
     },
 
     tudo() {
@@ -1170,6 +1246,12 @@ select.entrada {
       const temItens = Estado.listas[tipo].length > 0;
       refs.barra.hidden = !temItens;
       refs.chips.hidden = !temItens;
+      if (refs.ordenacao) {
+        refs.ordenacao.hidden = !temItens;
+        for (const botao of refs.ordenacao.children) {
+          botao.setAttribute('aria-pressed', String(botao.dataset.ordem === filtro.ordem));
+        }
+      }
 
       const itens = Estado.visiveis(tipo);
       refs.grade.replaceChildren(...itens.map((i) => Render.card(i, tipo)));
@@ -1191,7 +1273,7 @@ select.entrada {
           el('p', { text: texto }),
           el('button', {
             type: 'button', class: 'btn btn-secundario',
-            on: { click: () => { Estado.filtros[tipo] = { busca: '', categoria: null }; Render.lista(tipo); } },
+            on: { click: () => { Object.assign(Estado.filtros[tipo], { busca: '', categoria: null }); Render.lista(tipo); } },
           }, 'Limpar busca e filtro'),
         ];
       }
@@ -1230,6 +1312,12 @@ select.entrada {
       return svg;
     },
 
+    estrelas(nota) {
+      return el('div', { class: 'estrelas', role: 'img', 'aria-label': `Desejo ${nota} de 5: ${DESEJO_TEXTOS[nota]}` },
+        el('span', { class: 'cheias', text: '★'.repeat(nota) }),
+        el('span', { class: 'vazias', text: '★'.repeat(5 - nota) }));
+    },
+
     card(item, tipo) {
       const janela = el('div', { class: 'pop-janela' },
         item.foto ? el('img', { src: item.foto, alt: '', loading: 'lazy', decoding: 'async', draggable: 'false' }) : Render.silhueta(item),
@@ -1240,6 +1328,7 @@ select.entrada {
         el('h3', { class: 'pop-nome', text: item.nome }),
         item.serie ? el('p', { class: 'pop-serie', text: item.serie }) : null,
         el('span', { class: 'tag', text: item.categoria }),
+        tipo === 'wishlist' && item.desejo ? Render.estrelas(item.desejo) : null,
         tipo === 'colecao' ? el('dl', { class: 'pop-valores' },
           el('dt', { text: 'Pago' }), el('dd', { text: Util.formatarMoeda(item.valorPago) }),
           el('dt', { text: 'Estimado' }), el('dd', { text: Util.formatarMoeda(item.valorEstimado) }),
@@ -1432,6 +1521,29 @@ select.entrada {
       return { campo, input, erro };
     },
 
+    campoDesejo(inicial) {
+      let atual = inicial;
+      const texto = el('span', { class: 'nota-texto', 'aria-hidden': 'true' });
+      const estrelas = [1, 2, 3, 4, 5].map((n) => {
+        const radio = el('input', {
+          type: 'radio', name: 'desejo', value: String(n),
+          'aria-label': `${n} ${n === 1 ? 'estrela' : 'estrelas'}: ${DESEJO_TEXTOS[n]}`,
+        });
+        radio.checked = n === inicial;
+        radio.addEventListener('change', () => { atual = n; pintar(); });
+        return el('label', { class: 'nota-estrela' }, radio, Util.icone('estrelaCheia'));
+      });
+      const pintar = () => {
+        estrelas.forEach((rotulo, i) => rotulo.classList.toggle('cheia', atual !== null && i < atual));
+        texto.textContent = atual ? DESEJO_TEXTOS[atual] : 'Sem nota';
+      };
+      pintar();
+      const campo = el('fieldset', { class: 'nota' },
+        el('legend', { text: 'Nota de desejo' }),
+        el('div', { class: 'nota-linha' }, el('div', { class: 'nota-estrelas' }, estrelas), texto));
+      return { campo, valor: () => atual };
+    },
+
     marcarErro(ref, mensagem) {
       if (mensagem) {
         ref.erro.textContent = mensagem;
@@ -1511,6 +1623,8 @@ select.entrada {
         el('span', { class: 'campo-rotulo', text: 'Foto' }),
         el('div', { class: 'foto-area' }, preview, el('div', { class: 'foto-botoes' }, btnFoto, btnRemover)), seletor);
 
+      const nota = colecao ? null : Modais.campoDesejo(item ? (item.desejo || null) : DESEJO_PADRAO);
+
       const btnSalvar = el('button', { type: 'submit', class: 'btn btn-primario', text: editando ? 'Salvar alterações' : (colecao ? 'Salvar Funko' : 'Salvar na wishlist') });
       let folha;
       const form = el('form', { class: 'form', novalidate: true },
@@ -1518,7 +1632,7 @@ select.entrada {
         el('div', { class: 'linha-2' }, numero.campo, campoCategoria),
         nome.campo,
         serie.campo,
-        colecao ? el('div', { class: 'linha-2' }, pago.campo, estimado.campo) : null,
+        colecao ? el('div', { class: 'linha-2' }, pago.campo, estimado.campo) : nota.campo,
         el('div', { class: 'form-botoes' },
           el('button', { type: 'button', class: 'btn btn-secundario', text: 'Cancelar', on: { click: () => folha.fechar() } }),
           btnSalvar));
@@ -1543,6 +1657,7 @@ select.entrada {
           foto,
           valorPago,
           valorEstimado,
+          desejo: colecao ? null : nota.valor(),
         };
         const ok = editando ? Estado.atualizar(tipo, item.id, dados) : Estado.adicionar(tipo, dados);
         if (!ok) return;
