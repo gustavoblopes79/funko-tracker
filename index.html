@@ -636,6 +636,40 @@ select.entrada {
 .foto-botoes { display: grid; gap: 8px; flex: 1; }
 .foto-botoes .btn { min-height: 44px; font-size: 15px; }
 .btn-remover-foto { background: none; color: var(--danger); border: 1px solid #3a3a3a; }
+.foto-botoes { grid-template-columns: 1fr 1fr; align-content: center; }
+.foto-botoes .btn-foto {
+  min-height: 68px;
+  padding: 8px 6px;
+  flex-direction: column;
+  gap: 5px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.15;
+  text-align: center;
+}
+.foto-botoes .btn-foto svg { width: 22px; height: 22px; }
+.foto-botoes .btn-remover-foto { grid-column: 1 / -1; }
+.area-colar {
+  margin-top: 8px;
+  min-height: 64px;
+  padding: 12px 14px;
+  border: 1.5px dashed var(--accent);
+  border-radius: 12px;
+  background: rgba(232, 67, 147, .08);
+  color: var(--text);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  -webkit-user-select: text;
+  user-select: text;
+  caret-color: transparent;
+  cursor: text;
+}
+.area-colar:empty::before { content: attr(data-placeholder); color: #f7c6de; pointer-events: none; }
+.area-colar:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.foto-dica { margin: 8px 0 0; font-size: 14px; color: var(--muted); }
 
 .nota { border: 0; margin: 0; padding: 0; min-width: 0; }
 .nota legend { padding: 0; margin-bottom: 4px; font-size: 14px; font-weight: 600; color: #cfcfcf; }
@@ -783,6 +817,7 @@ select.entrada {
     editar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
     lixeira: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
     mover: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg>',
+    colar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M9 4.5H7A1.5 1.5 0 0 0 5.5 6v13A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2"/><rect x="9" y="3" width="6" height="3.5" rx="1"/><path d="M9 15l2-2.5 1.6 2 1.4-1.5L16 15.5H8.5"/></svg>',
     camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
     ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     alerta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.5"/></svg>',
@@ -923,6 +958,36 @@ select.entrada {
       ctx.fillRect(0, 0, largura, altura);
       ctx.drawImage(img, 0, 0, largura, altura);
       return canvas.toDataURL('image/jpeg', FOTO_QUALIDADE);
+    },
+
+    dataUrlParaBlob(url) {
+      const [cabecalho, base64] = String(url).split(',');
+      const tipo = (cabecalho.match(/^data:([^;]+);base64$/) || [])[1];
+      if (!tipo || !base64) return null;
+      const binario = atob(base64);
+      const bytes = new Uint8Array(binario.length);
+      for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
+      return new Blob([bytes], { type: tipo });
+    },
+
+    // Procura uma imagem num evento de colar: arquivos, itens ou <img> embutida no HTML copiado.
+    imagemDoColar(evento) {
+      const dados = evento.clipboardData;
+      if (!dados) return null;
+      const arquivo = Array.from(dados.files || []).find((f) => f.type.startsWith('image/'));
+      if (arquivo) return arquivo;
+      for (const item of Array.from(dados.items || [])) {
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          const f = item.getAsFile();
+          if (f) return f;
+        }
+      }
+      const html = dados.getData && dados.getData('text/html');
+      if (html && html.includes('<img')) {
+        const img = new DOMParser().parseFromString(html, 'text/html').querySelector('img[src^="data:image/"]');
+        if (img) return Util.dataUrlParaBlob(img.getAttribute('src'));
+      }
+      return null;
     },
 
     lerArquivoTexto(arquivo) {
@@ -1538,6 +1603,122 @@ select.entrada {
       return { campo, valor: () => atual };
     },
 
+    campoFoto(inicial) {
+      const SEM_IMAGEM = 'Não há imagem copiada. Copie uma foto e tente de novo.';
+      let foto = inicial;
+      let ocupado = false;
+
+      const preview = el('div', { class: 'foto-preview' });
+      const seletor = el('input', { type: 'file', accept: 'image/*', hidden: true, 'aria-hidden': 'true', tabindex: '-1' });
+      const btnColar = el('button', { type: 'button', class: 'btn btn-secundario btn-foto' });
+      const btnFototeca = el('button', { type: 'button', class: 'btn btn-secundario btn-foto' });
+      const btnRemover = el('button', { type: 'button', class: 'btn btn-remover-foto', text: 'Remover foto' });
+      const dica = el('p', { class: 'foto-dica', 'aria-live': 'polite', hidden: true });
+      const area = el('div', {
+        class: 'area-colar', contenteditable: 'true', role: 'textbox', inputmode: 'none',
+        'aria-label': 'Área para colar a foto', 'data-placeholder': 'Toque e segure aqui e escolha Colar', hidden: true,
+      });
+
+      const desenhar = () => {
+        preview.replaceChildren(foto ? el('img', { src: foto, alt: 'Foto do Funko' }) : Util.icone('camera'));
+        btnColar.replaceChildren(Util.icone('colar'), 'Colar foto');
+        btnFototeca.replaceChildren(Util.icone('camera'), 'Escolher da fototeca');
+        btnColar.disabled = false;
+        btnFototeca.disabled = false;
+        btnRemover.hidden = !foto;
+      };
+
+      const mostrarArea = (mensagem) => {
+        dica.textContent = mensagem;
+        dica.hidden = false;
+        area.hidden = false;
+        area.focus({ preventScroll: true });
+        area.scrollIntoView({ block: 'nearest' });
+      };
+
+      const processar = async (imagem) => {
+        if (ocupado) return;
+        if (imagem.type && !imagem.type.startsWith('image/')) {
+          Toast.erro('Esse arquivo não é uma imagem. Escolha uma foto.');
+          return;
+        }
+        ocupado = true;
+        btnColar.disabled = true;
+        btnFototeca.disabled = true;
+        btnFototeca.replaceChildren('Preparando foto…');
+        try {
+          foto = await Util.fotoParaJpeg(imagem);
+          area.hidden = true;
+          dica.hidden = true;
+        } catch (e) {
+          Toast.erro('Não foi possível abrir essa imagem. Tente outra foto em JPEG ou PNG.');
+        }
+        ocupado = false;
+        desenhar();
+      };
+
+      btnFototeca.addEventListener('click', () => seletor.click());
+      btnRemover.addEventListener('click', () => { foto = null; desenhar(); btnFototeca.focus(); });
+      seletor.addEventListener('change', () => {
+        const arquivo = seletor.files && seletor.files[0];
+        seletor.value = '';
+        if (arquivo) processar(arquivo);
+      });
+
+      btnColar.addEventListener('click', async () => {
+        if (ocupado) return;
+        if (!navigator.clipboard || typeof navigator.clipboard.read !== 'function') {
+          mostrarArea('Este navegador não deixa o app ler o que você copiou. Toque e segure na área abaixo e escolha Colar.');
+          return;
+        }
+        let itens;
+        try {
+          itens = await navigator.clipboard.read();
+        } catch (e) {
+          mostrarArea(e && e.name === 'NotAllowedError'
+            ? 'O navegador não deu acesso ao que você copiou. Toque e segure na área abaixo e escolha Colar, ou use ⌘V.'
+            : 'Não deu para ler o que você copiou. Toque e segure na área abaixo e escolha Colar.');
+          return;
+        }
+        for (const item of itens) {
+          const tipo = item.types.find((t) => t.startsWith('image/'));
+          if (tipo) {
+            processar(await item.getType(tipo));
+            return;
+          }
+        }
+        Toast.erro(SEM_IMAGEM);
+        mostrarArea('Se a foto estiver copiada em outro app, toque e segure na área abaixo e escolha Colar.');
+      });
+
+      // Ouve ⌘V / Ctrl+V e o "Colar" do iPhone enquanto o formulário estiver aberto.
+      const aoColar = (e) => {
+        const naArea = e.target instanceof Element && e.target.closest('.area-colar');
+        const imagem = Util.imagemDoColar(e);
+        if (!imagem) {
+          if (naArea) { e.preventDefault(); Toast.erro(SEM_IMAGEM); }
+          return;
+        }
+        e.preventDefault();
+        processar(imagem);
+      };
+      area.addEventListener('input', () => { area.textContent = ''; });
+      desenhar();
+
+      const campo = el('div', { class: 'campo' },
+        el('span', { class: 'campo-rotulo', text: 'Foto' }),
+        el('div', { class: 'foto-area' }, preview, el('div', { class: 'foto-botoes' }, btnColar, btnFototeca, btnRemover)),
+        dica, area, seletor);
+
+      return {
+        campo,
+        seletor,
+        valor: () => foto,
+        ligar: () => document.addEventListener('paste', aoColar),
+        desligar: () => document.removeEventListener('paste', aoColar),
+      };
+    },
+
     marcarErro(ref, mensagem) {
       if (mensagem) {
         ref.erro.textContent = mensagem;
@@ -1561,7 +1742,6 @@ select.entrada {
     formulario(tipo, item) {
       const editando = Boolean(item);
       const colecao = tipo === 'colecao';
-      let foto = item ? item.foto : null;
 
       const numero = Modais.campoTexto({ id: 'f-numero', rotulo: 'Número', valor: item && item.numero, placeholder: '001', maxlength: 12, inputmode: 'numeric' });
       const nome = Modais.campoTexto({ id: 'f-nome', rotulo: 'Nome', valor: item && item.nome, obrigatorio: true, placeholder: 'Ex.: Darth Vader', maxlength: 120, autocapitalize: 'words' });
@@ -1582,47 +1762,14 @@ select.entrada {
       const pago = colecao ? Modais.campoValor({ id: 'f-pago', rotulo: 'Valor pago', valor: item && item.valorPago }) : null;
       const estimado = colecao ? Modais.campoValor({ id: 'f-estimado', rotulo: 'Valor estimado', valor: item && item.valorEstimado }) : null;
 
-      const preview = el('div', { class: 'foto-preview' });
-      const seletor = el('input', { type: 'file', accept: 'image/*', hidden: true, 'aria-hidden': 'true', tabindex: '-1' });
-      const btnFoto = el('button', { type: 'button', class: 'btn btn-secundario' });
-      const btnRemover = el('button', { type: 'button', class: 'btn btn-remover-foto', text: 'Remover foto' });
-      const desenharFoto = () => {
-        preview.replaceChildren(foto ? el('img', { src: foto, alt: 'Foto do Funko' }) : Util.icone('camera'));
-        btnFoto.replaceChildren(Util.icone('camera'), foto ? 'Trocar foto' : 'Adicionar foto');
-        btnRemover.hidden = !foto;
-      };
-      btnFoto.addEventListener('click', () => seletor.click());
-      btnRemover.addEventListener('click', () => { foto = null; desenharFoto(); btnFoto.focus(); });
-      seletor.addEventListener('change', async () => {
-        const arquivo = seletor.files && seletor.files[0];
-        seletor.value = '';
-        if (!arquivo) return;
-        if (arquivo.type && !arquivo.type.startsWith('image/')) {
-          Toast.erro('Esse arquivo não é uma imagem. Escolha uma foto.');
-          return;
-        }
-        btnFoto.disabled = true;
-        btnFoto.replaceChildren('Preparando foto…');
-        try {
-          foto = await Util.fotoParaJpeg(arquivo);
-        } catch (e) {
-          Toast.erro('Não foi possível abrir essa imagem. Tente outra foto em JPEG ou PNG.');
-        }
-        btnFoto.disabled = false;
-        desenharFoto();
-      });
-      desenharFoto();
-
-      const campoFoto = el('div', { class: 'campo' },
-        el('span', { class: 'campo-rotulo', text: 'Foto' }),
-        el('div', { class: 'foto-area' }, preview, el('div', { class: 'foto-botoes' }, btnFoto, btnRemover)), seletor);
+      const campoFoto = Modais.campoFoto(item ? item.foto : null);
 
       const nota = colecao ? null : Modais.campoDesejo(item ? (item.desejo || null) : DESEJO_PADRAO);
 
       const btnSalvar = el('button', { type: 'submit', class: 'btn btn-primario', text: editando ? 'Salvar alterações' : (colecao ? 'Salvar Funko' : 'Salvar na wishlist') });
       let folha;
       const form = el('form', { class: 'form', novalidate: true },
-        campoFoto,
+        campoFoto.campo,
         el('div', { class: 'linha-2' }, numero.campo, campoCategoria),
         nome.campo,
         serie.campo,
@@ -1648,7 +1795,7 @@ select.entrada {
           nome: nome.input.value.trim(),
           serie: serie.input.value.trim(),
           categoria: select.value,
-          foto,
+          foto: campoFoto.valor(),
           valorPago,
           valorEstimado,
           desejo: colecao ? null : nota.valor(),
@@ -1665,7 +1812,8 @@ select.entrada {
 
       const titulo = editando ? 'Editar Funko' : (colecao ? 'Novo Funko na coleção' : 'Novo Funko na wishlist');
       if (!editando) nome.input.setAttribute('data-foco-inicial', '');
-      folha = Folha.abrir({ rotulo: titulo, conteudo: [el('h2', { text: titulo }), form] });
+      campoFoto.ligar();
+      folha = Folha.abrir({ rotulo: titulo, conteudo: [el('h2', { text: titulo }), form], aoFechar: campoFoto.desligar });
     },
 
     acoes(tipo, id) {
