@@ -920,6 +920,110 @@ select.entrada {
 .toast-erro svg { color: var(--danger); }
 
 /* =========================================================
+   VISUALIZADOR DE FOTO
+   ========================================================= */
+.pop-ver {
+  position: absolute;
+  top: 16px; left: 9px; right: 9px;
+  aspect-ratio: 4 / 5;
+  padding: 0;
+  border: 0;
+  border-radius: 14px 14px 10px 10px;
+  background: none;
+  cursor: zoom-in;
+  z-index: 2;
+}
+.pop-ver:focus-visible { outline-offset: -3px; }
+
+.visor {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  animation: visor-entrar .2s ease-out;
+}
+@keyframes visor-entrar { from { opacity: 0; } to { opacity: 1; } }
+.visor-fundo { position: absolute; inset: 0; background: #000; }
+.visor-topo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: calc(var(--sa-top) + 10px) var(--gutter-r) 10px var(--gutter-l);
+}
+.visor-titulo { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; }
+.visor-titulo h2 {
+  margin: 0;
+  font-family: var(--fonte-display);
+  font-size: 19px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.visor-numero {
+  flex: none;
+  min-width: 36px; height: 36px;
+  padding: 0 7px;
+  border-radius: 18px;
+  border: 2px solid var(--cat);
+  display: grid;
+  place-items: center;
+  font-family: var(--fonte-display);
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.visor-fechar {
+  flex: none;
+  min-width: 44px; min-height: 44px;
+  padding: 0 16px 0 12px;
+  border: 0;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .16);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.visor-fechar svg { width: 20px; height: 20px; }
+.visor-fechar:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.visor-palco { position: relative; flex: 1; min-height: 0; overflow: hidden; touch-action: none; }
+.visor-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform-origin: center;
+  will-change: transform;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+.visor-img.animar { transition: transform .25s var(--mola); }
+.visor-carregando { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 24px; color: #c8c8c8; text-align: center; }
+.visor-dica {
+  position: relative;
+  margin: 0;
+  padding: 10px var(--gutter-r) calc(var(--sa-bottom) + 14px) var(--gutter-l);
+  text-align: center;
+  color: #b8b8b8;
+  font-size: 14px;
+}
+
+button.foto-preview { padding: 0; font: inherit; }
+button.foto-preview:not(:disabled) { cursor: zoom-in; }
+button.foto-preview:disabled { opacity: 1; }
+
+/* =========================================================
    MOVIMENTO REDUZIDO
    ========================================================= */
 @media (prefers-reduced-motion: reduce) {
@@ -1056,6 +1160,7 @@ select.entrada {
     pasta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5A1.5 1.5 0 0 1 5 5h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z"/></svg>',
     mesclar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v5a4 4 0 0 0 4 4h2a4 4 0 0 1 4 4v5"/><path d="M18 3v5a4 4 0 0 1-4 4"/><path d="M13 18l3 3 3-3"/></svg>',
     relogio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+    fechar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
     ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     alerta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.5"/></svg>',
@@ -2230,6 +2335,7 @@ select.entrada {
         class: 'pop', role: 'listitem', dataset: { id: item.id }, vars: Util.varsCategoria(item.categoria),
       },
         el('button', { type: 'button', class: 'pop-corpo', 'aria-label': `Editar ${rotulo}` }, janela, info),
+        imagem ? el('button', { type: 'button', class: 'pop-ver', 'aria-label': `Ver foto de ${item.nome} em tamanho grande` }) : null,
         el('button', { type: 'button', class: 'pop-mais', 'aria-label': `Mais ações para ${item.nome}` },
           el('span', null, Util.icone('reticencias'))),
       );
@@ -2431,6 +2537,7 @@ select.entrada {
       };
 
       const teclado = (e) => {
+        if (Visor.aberto) return;
         if (e.key === 'Escape') {
           if (e.target instanceof Element && e.target.getAttribute('aria-expanded') === 'true') return;
           e.preventDefault();
@@ -2456,6 +2563,221 @@ select.entrada {
       const alvo = painel.querySelector('[data-foco-inicial]') || painel.querySelector('button, input, select');
       if (alvo) alvo.focus({ preventScroll: true });
       return controle;
+    },
+  };
+
+  // Visualizador em tela cheia, com pinça, toque duplo, arrastar e arrastar para baixo para fechar.
+  const Visor = {
+    aberto: null,
+
+    async abrir({ item, origem, foto = null }) {
+      if (Visor.aberto) Visor.aberto();
+      const focoAnterior = origem || document.activeElement;
+      const idCard = origem && origem.closest('.pop') ? origem.closest('.pop').dataset.id : null;
+      const reduzir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const img = el('img', { class: 'visor-img', alt: `Foto de ${item.nome}`, draggable: 'false', hidden: true });
+      const carregando = el('p', { class: 'visor-carregando', role: 'status', text: 'Carregando foto…' });
+      const palco = el('div', { class: 'visor-palco' }, img, carregando);
+      const fundo = el('div', { class: 'visor-fundo' });
+      const btnFechar = el('button', { type: 'button', class: 'visor-fechar', 'aria-label': 'Fechar foto' }, Util.icone('fechar'), 'Fechar');
+      const topo = el('div', { class: 'visor-topo' },
+        el('div', { class: 'visor-titulo' },
+          item.numero ? el('span', { class: 'visor-numero', 'aria-hidden': 'true', text: item.numero }) : null,
+          el('h2', { id: 'visor-titulo', text: item.numero ? `${item.nome}` : item.nome })),
+        btnFechar);
+      const dica = el('p', { class: 'visor-dica', text: 'Toque duas vezes ou use dois dedos para ampliar.' });
+      const visor = el('div', {
+        class: 'visor', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'visor-titulo',
+        'aria-describedby': item.numero ? 'visor-numero' : null, vars: Util.varsCategoria(item.categoria),
+      }, fundo, topo, palco, item.numero ? el('span', { id: 'visor-numero', class: 'sr-only', text: `Número ${item.numero}` }) : null, dica);
+
+      // Tudo atrás do visualizador fica inerte: app, folhas abertas e toasts.
+      const inertes = [dom.app, ...document.querySelectorAll('.camada')].map((n) => [n, n.inert]);
+      inertes.forEach(([n]) => { n.inert = true; });
+
+      let s = 1;
+      let tx = 0;
+      let ty = 0;
+      const pontos = new Map();
+      let gesto = null;
+      let moveu = false;
+      let ultimoToque = { t: 0, x: 0, y: 0 };
+      let timerToque = null;
+
+      const limitarEscala = (v) => Math.min(4, Math.max(1, v));
+      const relativo = (p) => {
+        const r = palco.getBoundingClientRect();
+        return { x: p.x - r.left - r.width / 2, y: p.y - r.top - r.height / 2 };
+      };
+      const conteudo = () => {
+        const r = palco.getBoundingClientRect();
+        const k = Math.min(r.width / (img.naturalWidth || 1), r.height / (img.naturalHeight || 1));
+        return { r, w: (img.naturalWidth || 1) * k, h: (img.naturalHeight || 1) * k };
+      };
+      const prender = () => {
+        const { r, w, h } = conteudo();
+        const mx = Math.max(0, (w * s - r.width) / 2);
+        const my = Math.max(0, (h * s - r.height) / 2);
+        tx = Math.min(mx, Math.max(-mx, tx));
+        ty = Math.min(my, Math.max(-my, ty));
+      };
+      const aplicar = (animar, extra = '') => {
+        img.classList.toggle('animar', Boolean(animar) && !reduzir);
+        img.style.transform = `translate(${tx}px, ${ty}px) scale(${s})${extra}`;
+      };
+      const zoomEm = (novo, ponto) => {
+        const u = { x: (ponto.x - tx) / s, y: (ponto.y - ty) / s };
+        s = limitarEscala(novo);
+        tx = ponto.x - s * u.x;
+        ty = ponto.y - s * u.y;
+        if (s === 1) { tx = 0; ty = 0; }
+        prender();
+      };
+      const naImagem = (p) => {
+        const { w, h } = conteudo();
+        const q = relativo(p);
+        return Math.abs(q.x - tx) <= (w * s) / 2 && Math.abs(q.y - ty) <= (h * s) / 2;
+      };
+      const distancia = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+      const meio = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+
+      const fechar = () => {
+        if (Visor.aberto !== fechar) return;
+        Visor.aberto = null;
+        clearTimeout(timerToque);
+        document.removeEventListener('keydown', teclado, true);
+        document.removeEventListener('gesturestart', bloquear);
+        document.removeEventListener('gesturechange', bloquear);
+        visor.remove();
+        inertes.forEach(([n, antes]) => { n.inert = antes; });
+        let alvo = focoAnterior && focoAnterior.isConnected ? focoAnterior : null;
+        if (!alvo && idCard) alvo = document.querySelector(`.pop[data-id="${CSS.escape(idCard)}"] .pop-ver`);
+        if (alvo) alvo.focus({ preventScroll: true });
+      };
+      const bloquear = (e) => e.preventDefault();
+      const teclado = (e) => {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); fechar(); return; }
+        if (e.key === 'Tab') { e.preventDefault(); btnFechar.focus(); return; }
+        const centro = { x: 0, y: 0 };
+        if (e.key === '+' || e.key === '=') { zoomEm(s * 1.5, centro); aplicar(true); }
+        else if (e.key === '-') { zoomEm(s / 1.5, centro); aplicar(true); }
+        else if (e.key === '0') { zoomEm(1, centro); aplicar(true); }
+      };
+
+      palco.addEventListener('pointerdown', (e) => {
+        if (img.hidden) return;
+        try { palco.setPointerCapture(e.pointerId); } catch (erro) { /* ponteiro já liberado */ }
+        pontos.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (pontos.size === 1) moveu = false;
+        if (pontos.size === 2) {
+          const [a, b] = Array.from(pontos.values());
+          gesto = { tipo: 'pinca', s0: s, tx0: tx, ty0: ty, d0: distancia(a, b) || 1, m0: relativo(meio(a, b)) };
+          moveu = true;
+        } else if (pontos.size === 1) {
+          gesto = s > 1
+            ? { tipo: 'arrastar', x0: e.clientX, y0: e.clientY, tx0: tx, ty0: ty }
+            : { tipo: 'descer', x0: e.clientX, y0: e.clientY };
+        }
+      });
+      palco.addEventListener('pointermove', (e) => {
+        if (!pontos.has(e.pointerId) || !gesto) return;
+        pontos.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (gesto.tipo === 'pinca' && pontos.size >= 2) {
+          const [a, b] = Array.from(pontos.values());
+          const u = { x: (gesto.m0.x - gesto.tx0) / gesto.s0, y: (gesto.m0.y - gesto.ty0) / gesto.s0 };
+          const m = relativo(meio(a, b));
+          s = limitarEscala(gesto.s0 * (distancia(a, b) / gesto.d0));
+          tx = m.x - s * u.x;
+          ty = m.y - s * u.y;
+          prender();
+          aplicar(false);
+          return;
+        }
+        const dx = e.clientX - gesto.x0;
+        const dy = e.clientY - gesto.y0;
+        if (Math.hypot(dx, dy) > 8) moveu = true;
+        if (gesto.tipo === 'arrastar') {
+          tx = gesto.tx0 + dx;
+          ty = gesto.ty0 + dy;
+          prender();
+          aplicar(false);
+        } else if (gesto.tipo === 'descer' && moveu) {
+          const desce = Math.max(0, dy);
+          ty = desce;
+          aplicar(false, ` scale(${1 - Math.min(desce / 1200, 0.15)})`);
+          fundo.style.opacity = String(Math.max(0.25, 1 - desce / 400));
+        }
+      });
+      const soltar = (e) => {
+        if (!pontos.has(e.pointerId)) return;
+        const ponto = pontos.get(e.pointerId);
+        pontos.delete(e.pointerId);
+        if (gesto && gesto.tipo === 'pinca') {
+          if (pontos.size === 1) {
+            const [resto] = Array.from(pontos.values());
+            gesto = { tipo: 'arrastar', x0: resto.x, y0: resto.y, tx0: tx, ty0: ty };
+          } else if (!pontos.size) {
+            if (s < 1.05) { s = 1; tx = 0; ty = 0; aplicar(true); }
+            gesto = null;
+          }
+          return;
+        }
+        if (pontos.size) return;
+        const tipo = gesto && gesto.tipo;
+        gesto = null;
+        if (tipo === 'descer' && moveu) {
+          if (ty > 110) { fechar(); return; }
+          ty = 0;
+          fundo.style.opacity = '';
+          aplicar(true);
+          return;
+        }
+        if (moveu || e.type === 'pointercancel') return;
+        const agora = performance.now();
+        if (agora - ultimoToque.t < 320 && distancia(ponto, ultimoToque) < 40) {
+          clearTimeout(timerToque);
+          ultimoToque = { t: 0, x: 0, y: 0 };
+          if (s > 1) { s = 1; tx = 0; ty = 0; } else zoomEm(2.5, relativo(ponto));
+          aplicar(true);
+          return;
+        }
+        ultimoToque = { t: agora, x: ponto.x, y: ponto.y };
+        if (s === 1 && !naImagem(ponto)) timerToque = setTimeout(fechar, 320);
+      };
+      palco.addEventListener('pointerup', soltar);
+      palco.addEventListener('pointercancel', soltar);
+      palco.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        zoomEm(s * Math.exp(-e.deltaY * 0.0025), relativo({ x: e.clientX, y: e.clientY }));
+        aplicar(false);
+      }, { passive: false });
+      for (const area of [topo, dica]) area.addEventListener('click', (e) => { if (e.target === area) fechar(); });
+      btnFechar.addEventListener('click', fechar);
+      document.addEventListener('keydown', teclado, true);
+      document.addEventListener('gesturestart', bloquear);
+      document.addEventListener('gesturechange', bloquear);
+
+      Visor.aberto = fechar;
+      document.body.append(visor);
+      btnFechar.focus({ preventScroll: true });
+
+      let fonte = foto || item.foto || null;
+      try {
+        if (!fonte && item.id) fonte = (await Fotos.completa(item.id)) || (await Fotos.miniatura(item.id));
+      } catch (e) {
+        fonte = null;
+      }
+      if (Visor.aberto !== fechar) return;
+      if (!fonte) {
+        carregando.textContent = 'Não foi possível abrir a foto. Feche e tente de novo.';
+        return;
+      }
+      img.src = fonte;
+      try { await img.decode(); } catch (e) { /* mostra mesmo assim */ }
+      if (Visor.aberto !== fechar) return;
+      img.hidden = false;
+      carregando.remove();
     },
   };
 
@@ -2516,7 +2838,7 @@ select.entrada {
       let alterada = false;
       let ocupado = false;
 
-      const preview = el('div', { class: 'foto-preview' });
+      const preview = el('button', { type: 'button', class: 'foto-preview', 'aria-label': 'Ampliar foto' });
       const seletor = el('input', { type: 'file', accept: 'image/*', hidden: true, 'aria-hidden': 'true', tabindex: '-1' });
       const btnColar = el('button', { type: 'button', class: 'btn btn-secundario btn-foto' });
       const btnFototeca = el('button', { type: 'button', class: 'btn btn-secundario btn-foto' });
@@ -2528,7 +2850,8 @@ select.entrada {
       });
 
       const desenhar = () => {
-        preview.replaceChildren(previa ? el('img', { src: previa, alt: 'Foto do Funko' }) : Util.icone('camera'));
+        preview.replaceChildren(previa ? el('img', { src: previa, alt: '' }) : Util.icone('camera'));
+        preview.disabled = !previa;
         btnColar.replaceChildren(Util.icone('colar'), 'Colar foto');
         btnFototeca.replaceChildren(Util.icone('camera'), 'Escolher da fototeca');
         btnColar.disabled = false;
@@ -2575,6 +2898,23 @@ select.entrada {
       };
 
       btnFototeca.addEventListener('click', () => seletor.click());
+      preview.addEventListener('click', () => {
+        if (!previa) return;
+        const nomeAtual = document.getElementById('f-nome');
+        const numeroAtual = document.getElementById('f-numero');
+        const categoriaAtual = document.getElementById('f-categoria');
+        Visor.abrir({
+          item: {
+            id: item && !alterada ? item.id : null,
+            foto: alterada ? null : (item && item.foto) || null,
+            nome: (nomeAtual && nomeAtual.value.trim()) || (item && item.nome) || 'Nova foto',
+            numero: (numeroAtual && numeroAtual.value.trim()) || '',
+            categoria: (categoriaAtual && categoriaAtual.value) || (item && item.categoria) || 'Standard',
+          },
+          origem: preview,
+          foto: alterada ? foto : null,
+        });
+      });
       btnRemover.addEventListener('click', () => {
         foto = null;
         previa = null;
@@ -3428,7 +3768,10 @@ select.entrada {
         const card = e.target.closest('.pop');
         if (!card) return;
         const id = card.dataset.id;
-        if (e.target.closest('.pop-mais')) Modais.acoes(tipo, id);
+        if (e.target.closest('.pop-ver')) {
+          const item = Estado.buscar(tipo, id);
+          if (item) Visor.abrir({ item, origem: e.target.closest('.pop-ver') });
+        } else if (e.target.closest('.pop-mais')) Modais.acoes(tipo, id);
         else if (e.target.closest('.pop-corpo')) {
           const item = Estado.buscar(tipo, id);
           if (item) Modais.formulario(tipo, item);
