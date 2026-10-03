@@ -597,6 +597,7 @@ img { display: block; max-width: 100%; }
 .bloco-rodape { display: grid; gap: 10px; margin-top: 16px; }
 .bloco-rodape .bloco-texto { margin: 0; }
 .bloco-nota { margin: 14px 0 0; color: var(--muted); font-size: 15px; }
+.bloco .espaco-usado { margin: 0 0 14px; }
 
 /* =========================================================
    FOLHAS (bottom sheet e action sheet)
@@ -984,8 +985,11 @@ select.entrada {
   const CHAVES = { colecao: 'funko_colecao', wishlist: 'funko_wishlist', series: 'funko_series' };
   const CHAVE_ULTIMO_BACKUP = 'funko_ultimo_backup';
   const TIPOS = ['colecao', 'wishlist'];
-  const FOTO_LADO_MAX = 800;
-  const FOTO_QUALIDADE = 0.7;
+  const FOTO_LADO_MAX = 1200;
+  const FOTO_QUALIDADE = 0.8;
+  const MINIATURA_LADO = 480;
+  const MINIATURA_QUALIDADE = 0.75;
+  const BANCO_FOTOS = 'funko-tracker-fotos';
   const TOQUE_LONGO_MS = 500;
   const DESEJO_PADRAO = 3;
   const SERIE_MAX = 120;
@@ -1181,21 +1185,27 @@ select.entrada {
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     },
 
-    carregarImagem(arquivo) {
+    // Aceita um arquivo/Blob (cria e revoga a URL temporária) ou uma data URL.
+    carregarImagem(fonte) {
       return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(arquivo);
+        const url = typeof fonte === 'string' ? fonte : URL.createObjectURL(fonte);
+        const liberar = () => { if (typeof fonte !== 'string') URL.revokeObjectURL(url); };
         const img = new Image();
-        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('imagem ilegível')); };
+        img.onload = () => { liberar(); resolve(img); };
+        img.onerror = () => { liberar(); reject(new Error('imagem ilegível')); };
         img.src = url;
       });
     },
 
-    async fotoParaJpeg(arquivo) {
-      const img = await Util.carregarImagem(arquivo);
+    fotoParaJpeg(arquivo) {
+      return Util.reduzirImagem(arquivo, FOTO_LADO_MAX, FOTO_QUALIDADE);
+    },
+
+    async reduzirImagem(fonte, ladoMax, qualidade) {
+      const img = await Util.carregarImagem(fonte);
       const maior = Math.max(img.naturalWidth, img.naturalHeight);
       if (!maior) throw new Error('imagem vazia');
-      const escala = Math.min(1, FOTO_LADO_MAX / maior);
+      const escala = Math.min(1, ladoMax / maior);
       const largura = Math.max(1, Math.round(img.naturalWidth * escala));
       const altura = Math.max(1, Math.round(img.naturalHeight * escala));
       const canvas = document.createElement('canvas');
@@ -1205,7 +1215,13 @@ select.entrada {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, largura, altura);
       ctx.drawImage(img, 0, 0, largura, altura);
-      return canvas.toDataURL('image/jpeg', FOTO_QUALIDADE);
+      return canvas.toDataURL('image/jpeg', qualidade);
+    },
+
+    formatarBytes(bytes) {
+      if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+      const mb = bytes / (1024 * 1024);
+      return `${mb.toLocaleString('pt-BR', { maximumFractionDigits: mb < 10 ? 1 : 0 })} MB`;
     },
 
     dataUrlParaBlob(url) {
@@ -1315,7 +1331,7 @@ select.entrada {
     },
 
     // Valida e normaliza um item lido do disco ou de um backup. Devolve null se não der para salvar.
-    normalizar(bruto, tipo, idsVistos) {
+    normalizar(bruto, tipo, idsVistos, confiarTemFoto = true) {
       if (!bruto || typeof bruto !== 'object' || Array.isArray(bruto)) return null;
       const nome = Storage.texto(bruto.nome, 120);
       if (!nome) return null;
@@ -1332,6 +1348,7 @@ select.entrada {
         serie: Storage.texto(bruto.serie, 120),
         categoria,
         foto,
+        temFoto: Boolean(foto) || (confiarTemFoto && bruto.temFoto === true),
         valorPago: tipo === 'colecao' ? Storage.numero(bruto.valorPago) : null,
         valorEstimado: tipo === 'colecao' ? Storage.numero(bruto.valorEstimado) : null,
         desejo: tipo === 'wishlist' ? Storage.desejo(bruto.desejo) : null,
@@ -1341,10 +1358,11 @@ select.entrada {
       };
     },
 
-    normalizarListas(colecaoBruta, wishlistBruta) {
+    // Do localStorage vale o "temFoto"; de um backup, só conta a foto que veio dentro do arquivo.
+    normalizarListas(colecaoBruta, wishlistBruta, confiarTemFoto = true) {
       const ids = new Set();
-      const colecao = colecaoBruta.map((i) => Storage.normalizar(i, 'colecao', ids)).filter(Boolean);
-      const wishlist = wishlistBruta.map((i) => Storage.normalizar(i, 'wishlist', ids)).filter(Boolean);
+      const colecao = colecaoBruta.map((i) => Storage.normalizar(i, 'colecao', ids, confiarTemFoto)).filter(Boolean);
+      const wishlist = wishlistBruta.map((i) => Storage.normalizar(i, 'wishlist', ids, confiarTemFoto)).filter(Boolean);
       return { colecao, wishlist };
     },
 
@@ -1398,6 +1416,197 @@ select.entrada {
       const series = Storage.completarSeries(Storage.normalizarSeries(brutas), colecao, wishlist);
       const gravarSeries = Storage.lerTexto(CHAVES.series) === null || series.length !== brutas.length;
       return { colecao, wishlist, series, gravarSeries };
+    },
+  };
+
+  /* =======================================================
+     FOTOS: IndexedDB ("fotos" = foto inteira, "miniaturas" = versão leve dos cards)
+     ======================================================= */
+  const Fotos = {
+    banco: null,
+    ativo: false,
+    pronto: Promise.resolve(false),
+    miniaturas: new Map(),
+    fila: Promise.resolve(),
+
+    abrir() {
+      const abertura = new Promise((resolve) => {
+        let pedido;
+        try {
+          if (!window.indexedDB) { resolve(false); return; }
+          pedido = window.indexedDB.open(BANCO_FOTOS, 1);
+        } catch (e) {
+          resolve(false);
+          return;
+        }
+        pedido.onupgradeneeded = () => {
+          const banco = pedido.result;
+          if (!banco.objectStoreNames.contains('fotos')) banco.createObjectStore('fotos');
+          if (!banco.objectStoreNames.contains('miniaturas')) banco.createObjectStore('miniaturas');
+        };
+        pedido.onsuccess = () => {
+          Fotos.banco = pedido.result;
+          Fotos.banco.onversionchange = () => Fotos.banco.close();
+          Fotos.ativo = true;
+          resolve(true);
+        };
+        pedido.onerror = () => resolve(false);
+        pedido.onblocked = () => resolve(false);
+      });
+      // Algumas versões do Safari travam a abertura em modo privado: depois de 5 s, segue sem banco.
+      const limite = new Promise((resolve) => setTimeout(() => resolve(false), 5000));
+      Fotos.pronto = Promise.race([abertura, limite]).then((ok) => {
+        if (!ok) Fotos.ativo = false;
+        return Fotos.ativo;
+      });
+      return Fotos.pronto;
+    },
+
+    transacao(lojas, modo, trabalho) {
+      return new Promise((resolve, reject) => {
+        let tx;
+        try {
+          tx = Fotos.banco.transaction(lojas, modo);
+        } catch (e) {
+          reject(e);
+          return;
+        }
+        const resultado = {};
+        tx.oncomplete = () => resolve(resultado);
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error || new Error('transação cancelada'));
+        try {
+          trabalho(Object.fromEntries(lojas.map((n) => [n, tx.objectStore(n)])), resultado);
+        } catch (e) {
+          try { tx.abort(); } catch (erro) { /* a transação já terminou */ }
+          reject(e);
+        }
+      });
+    },
+
+    // Lê foto e miniatura de vários Funkos: Map id → { foto, miniatura }.
+    async lerVarias(ids) {
+      const mapa = new Map();
+      for (let i = 0; i < ids.length; i += 25) {
+        const lote = ids.slice(i, i + 25);
+        await Fotos.transacao(['fotos', 'miniaturas'], 'readonly', (l) => {
+          for (const id of lote) {
+            const registro = { foto: null, miniatura: null };
+            mapa.set(id, registro);
+            l.fotos.get(id).onsuccess = (e) => { registro.foto = e.target.result || null; };
+            l.miniaturas.get(id).onsuccess = (e) => { registro.miniatura = e.target.result || null; };
+          }
+        });
+      }
+      return mapa;
+    },
+
+    async ler(loja, id) {
+      const r = await Fotos.transacao([loja], 'readonly', (l, res) => {
+        l[loja].get(id).onsuccess = (e) => { res.valor = e.target.result || null; };
+      });
+      return r.valor || null;
+    },
+
+    // Grava em lotes. Foto null apaga; sem miniatura, a antiga sai e uma nova é gerada quando o card aparecer.
+    async gravar(entradas) {
+      for (let i = 0; i < entradas.length; i += 20) {
+        const lote = entradas.slice(i, i + 20);
+        await Fotos.transacao(['fotos', 'miniaturas'], 'readwrite', (l) => {
+          for (const e of lote) {
+            if (e.foto) l.fotos.put(e.foto, e.id); else l.fotos.delete(e.id);
+            if (e.foto && e.miniatura) l.miniaturas.put(e.miniatura, e.id); else l.miniaturas.delete(e.id);
+          }
+        });
+        for (const e of lote) {
+          if (e.foto && e.miniatura) Fotos.miniaturas.set(e.id, e.miniatura); else Fotos.miniaturas.delete(e.id);
+        }
+      }
+    },
+
+    // Troca fotos guardando as anteriores. Devolve uma função que desfaz a troca.
+    async trocar(entradas) {
+      const antes = await Fotos.lerVarias(entradas.map((e) => e.id));
+      const restaurar = () => Fotos.gravar(entradas.map((e) => ({ id: e.id, ...antes.get(e.id) })));
+      try {
+        await Fotos.gravar(entradas);
+      } catch (erro) {
+        try { await restaurar(); } catch (e) { /* o que não foi gravado continua como estava */ }
+        throw erro;
+      }
+      return restaurar;
+    },
+
+    async completa(id) {
+      if (!(await Fotos.pronto)) return null;
+      return Fotos.ler('fotos', id);
+    },
+
+    async miniatura(id) {
+      if (Fotos.miniaturas.has(id)) return Fotos.miniaturas.get(id);
+      if (!(await Fotos.pronto)) return null;
+      let mini = await Fotos.ler('miniaturas', id);
+      if (!mini) {
+        // Uma de cada vez, para não decodificar muitas fotos grandes juntas.
+        const gerar = Fotos.fila.then(async () => {
+          const foto = await Fotos.ler('fotos', id);
+          if (!foto) return null;
+          const nova = await Util.reduzirImagem(foto, MINIATURA_LADO, MINIATURA_QUALIDADE);
+          await Fotos.transacao(['miniaturas'], 'readwrite', (l) => { l.miniaturas.put(nova, id); }).catch(() => {});
+          return nova;
+        });
+        Fotos.fila = gerar.catch(() => null);
+        mini = await gerar;
+      }
+      if (mini) Fotos.miniaturas.set(id, mini);
+      return mini;
+    },
+
+    // Move para o IndexedDB as fotos que ainda estão dentro dos itens no localStorage.
+    // Só tira do localStorage a foto que foi gravada e lida de volta igual. Rodar de novo não muda nada.
+    async migrar() {
+      const pendentes = [...Estado.listas.colecao, ...Estado.listas.wishlist].filter((i) => i.foto);
+      if (!pendentes.length) return 0;
+      const confirmadas = new Map();
+      for (let i = 0; i < pendentes.length; i += 10) {
+        const lote = pendentes.slice(i, i + 10);
+        try {
+          await Fotos.gravar(lote.map((item) => ({ id: item.id, foto: item.foto })));
+          const lidas = await Fotos.lerVarias(lote.map((item) => item.id));
+          for (const item of lote) {
+            if (lidas.get(item.id).foto === item.foto) confirmadas.set(item.id, item.foto);
+          }
+        } catch (e) {
+          break;
+        }
+      }
+      if (!confirmadas.size) return 0;
+      const tirar = (lista) => lista.map((item) => (item.foto && confirmadas.get(item.id) === item.foto
+        ? { ...item, foto: null, temFoto: true }
+        : item));
+      return Estado.persistir({ colecao: tirar(Estado.listas.colecao), wishlist: tirar(Estado.listas.wishlist) }, { silencioso: true })
+        ? confirmadas.size
+        : 0;
+    },
+
+    pedirPersistencia() {
+      try {
+        if (!navigator.storage || typeof navigator.storage.persist !== 'function') return;
+        const jaPersistido = typeof navigator.storage.persisted === 'function' ? navigator.storage.persisted() : Promise.resolve(false);
+        jaPersistido.then((sim) => (sim ? true : navigator.storage.persist())).catch(() => {});
+      } catch (e) {
+        /* sem a API, o app segue igual */
+      }
+    },
+
+    async espacoUsado() {
+      try {
+        if (!navigator.storage || typeof navigator.storage.estimate !== 'function') return null;
+        const { usage } = await navigator.storage.estimate();
+        return typeof usage === 'number' && usage > 0 ? usage : null;
+      } catch (e) {
+        return null;
+      }
     },
   };
 
@@ -1494,14 +1703,14 @@ select.entrada {
     },
 
     // Grava no disco antes de aceitar a mudança; se falhar, o estado em memória continua igual.
-    persistir(novas) {
+    persistir(novas, { silencioso = false } = {}) {
       const gravadas = [];
       for (const tipo of Object.keys(CHAVES)) {
         if (!novas[tipo]) continue;
         const r = Storage.gravar(CHAVES[tipo], novas[tipo]);
         if (!r.ok) {
           for (const t of gravadas) Storage.gravar(CHAVES[t], Estado.listas[t]);
-          Toast.erro(r.cota
+          if (!silencioso) Toast.erro(r.cota
             ? 'Sem espaço para salvar. Exporte um backup e remova fotos ou Funkos antigos.'
             : 'O navegador bloqueou o salvamento. Saia da navegação privada e tente de novo.');
           return false;
@@ -1513,10 +1722,43 @@ select.entrada {
       return true;
     },
 
-    adicionar(tipo, dados, grupoSerie) {
+    // Com o IndexedDB, a foto sai do item e fica só a marcação temFoto. Sem ele, a foto vai dentro do item.
+    comFoto(item, foto) {
+      return Fotos.ativo
+        ? { ...item, foto: null, temFoto: Boolean(foto) }
+        : { ...item, foto: foto || null, temFoto: Boolean(foto) };
+    },
+
+    // Grava as fotos primeiro e o localStorage depois; se o localStorage falhar, as fotos voltam como eram.
+    async persistirComFotos(novas, fotos, { miniaturas = false } = {}) {
+      if (!fotos.length || !Fotos.ativo) return Estado.persistir(novas);
+      let desfazer;
+      try {
+        const entradas = [];
+        for (const f of fotos) {
+          entradas.push(f.foto && miniaturas
+            ? { ...f, miniatura: await Util.reduzirImagem(f.foto, MINIATURA_LADO, MINIATURA_QUALIDADE) }
+            : f);
+        }
+        desfazer = await Fotos.trocar(entradas);
+      } catch (e) {
+        Toast.erro(e && e.name === 'QuotaExceededError'
+          ? 'Sem espaço para salvar a foto. Exporte um backup e apague fotos que você não usa mais.'
+          : 'Não foi possível salvar a foto. Tente de novo; se continuar, exporte um backup.');
+        return false;
+      }
+      if (Estado.persistir(novas)) return true;
+      try { await desfazer(); } catch (e) { /* a foto anterior continua no banco */ }
+      return false;
+    },
+
+    // fotoValor: { alterada, foto } vindo do formulário.
+    adicionar(tipo, dados, grupoSerie, fotoValor) {
       const { series, nome: serie } = Series.incluir(Estado.listas.series, dados.serie, grupoSerie);
-      const item = {
-        id: Util.gerarId(),
+      const id = Util.gerarId();
+      const foto = fotoValor && fotoValor.alterada ? fotoValor.foto : null;
+      const item = Estado.comFoto({
+        id,
         ...dados,
         serie,
         valorPago: tipo === 'colecao' ? dados.valorPago : null,
@@ -1524,22 +1766,31 @@ select.entrada {
         desejo: tipo === 'wishlist' ? dados.desejo : null,
         dataCriacao: new Date().toISOString(),
         tipo,
-      };
+      }, foto);
       const novas = { [tipo]: [item, ...Estado.listas[tipo]] };
       if (series !== Estado.listas.series) novas.series = series;
-      return Estado.persistir(novas);
+      return Estado.persistirComFotos(novas, foto ? [{ id, foto }] : [], { miniaturas: true });
     },
 
-    atualizar(tipo, id, dados, grupoSerie) {
+    atualizar(tipo, id, dados, grupoSerie, fotoValor) {
       const { series, nome: serie } = Series.incluir(Estado.listas.series, dados.serie, grupoSerie);
-      const lista = Estado.listas[tipo].map((i) => (i.id === id ? { ...i, ...dados, serie } : i));
+      const atual = Estado.buscar(tipo, id);
+      const mudou = Boolean(fotoValor && fotoValor.alterada);
+      const lista = Estado.listas[tipo].map((i) => {
+        if (i.id !== id) return i;
+        const novo = { ...i, ...dados, serie };
+        return mudou ? Estado.comFoto(novo, fotoValor.foto) : novo;
+      });
       const novas = { [tipo]: lista };
       if (series !== Estado.listas.series) novas.series = series;
-      return Estado.persistir(novas);
+      const fotos = mudou && (fotoValor.foto || (atual && atual.temFoto)) ? [{ id, foto: fotoValor.foto }] : [];
+      return Estado.persistirComFotos(novas, fotos, { miniaturas: true });
     },
 
     excluir(tipo, id) {
-      return Estado.persistir({ [tipo]: Estado.listas[tipo].filter((i) => i.id !== id) });
+      const item = Estado.buscar(tipo, id);
+      const novas = { [tipo]: Estado.listas[tipo].filter((i) => i.id !== id) };
+      return Estado.persistirComFotos(novas, item && item.temFoto ? [{ id, foto: null }] : []);
     },
 
     mover(id, de, para, valores) {
@@ -1596,8 +1847,22 @@ select.entrada {
       return Estado.persistir({ series: Estado.listas.series.filter((x) => x.id !== id) });
     },
 
+    // Importação: as fotos do backup vão para o IndexedDB e as fotos dos Funkos que saem são apagadas.
     substituirTudo(colecao, wishlist, series) {
-      return Estado.persistir({ colecao, wishlist, series });
+      if (!Fotos.ativo) return Estado.persistir({ colecao, wishlist, series });
+      const fotos = [];
+      const comFoto = new Set();
+      const tirar = (lista) => lista.map((item) => {
+        if (!item.foto) return { ...item, temFoto: false };
+        fotos.push({ id: item.id, foto: item.foto });
+        comFoto.add(item.id);
+        return { ...item, foto: null, temFoto: true };
+      });
+      const novas = { colecao: tirar(colecao), wishlist: tirar(wishlist), series };
+      for (const item of [...Estado.listas.colecao, ...Estado.listas.wishlist]) {
+        if (item.temFoto && !comFoto.has(item.id)) fotos.push({ id: item.id, foto: null });
+      }
+      return Estado.persistirComFotos(novas, fotos);
     },
 
     visiveis(tipo) {
@@ -1772,6 +2037,7 @@ select.entrada {
       refs.filtrosExtra.hidden = !temItens || (!temSeries && !refs.chipsLancamento.length && !Estado.temFiltro(tipo));
 
       const itens = Estado.visiveis(tipo);
+      if (Render.observadores[tipo]) Render.observadores[tipo].disconnect();
       if (itens.length && filtro.agrupar && temSeries) {
         refs.grade.replaceChildren(...Render.secoes(itens, tipo));
       } else {
@@ -1906,9 +2172,42 @@ select.entrada {
         el('span', { class: 'vazias', text: '★'.repeat(5 - nota) }));
     },
 
+    // Carrega a miniatura só quando o card chega perto da tela.
+    observadores: {},
+
+    observarFoto(img, id, tipo) {
+      const cache = Fotos.miniaturas.get(id);
+      if (cache) { img.src = cache; return; }
+      img.dataset.fotoId = id;
+      if (!('IntersectionObserver' in window)) { Render.carregarFoto(img); return; }
+      if (!Render.observadores[tipo]) {
+        Render.observadores[tipo] = new IntersectionObserver((entradas, obs) => {
+          for (const e of entradas) {
+            if (!e.isIntersecting) continue;
+            obs.unobserve(e.target);
+            Render.carregarFoto(e.target);
+          }
+        }, { root: dom.conteudo, rootMargin: '600px 0px' });
+      }
+      Render.observadores[tipo].observe(img);
+    },
+
+    carregarFoto(img) {
+      Fotos.miniatura(img.dataset.fotoId)
+        .then((src) => { if (src) img.src = src; })
+        .catch(() => { /* fica a moldura vazia */ });
+    },
+
     card(item, tipo) {
+      let imagem = null;
+      if (item.foto) {
+        imagem = el('img', { src: item.foto, alt: '', decoding: 'async', draggable: 'false' });
+      } else if (item.temFoto) {
+        imagem = el('img', { alt: '', decoding: 'async', draggable: 'false' });
+        Render.observarFoto(imagem, item.id, tipo);
+      }
       const janela = el('div', { class: 'pop-janela' },
-        item.foto ? el('img', { src: item.foto, alt: '', loading: 'lazy', decoding: 'async', draggable: 'false' }) : Render.silhueta(item),
+        imagem || Render.silhueta(item),
         item.numero ? el('span', { class: 'pop-numero', 'aria-hidden': 'true' }, item.numero) : null,
       );
 
@@ -2037,12 +2336,21 @@ select.entrada {
         el('p', { class: 'bloco-texto', text: dataUltimo
           ? `Último backup em ${dataUltimo}. O Safari pode apagar os dados de apps sem uso, então exporte com frequência.`
           : 'Você ainda não fez backup. O Safari pode apagar os dados de apps sem uso: exporte um arquivo e guarde no iCloud Drive.' }),
+        el('p', { class: 'bloco-nota espaco-usado', hidden: true }),
         el('div', { class: 'backup-botoes' },
           el('button', { type: 'button', class: 'btn btn-primario btn-largo', on: { click: Backup.exportar } }, Util.icone('exportar'), 'Exportar backup (JSON)'),
           el('button', { type: 'button', class: 'btn btn-secundario btn-largo', on: { click: Backup.escolherArquivo } }, Util.icone('importar'), 'Importar backup')),
       );
 
       dom.dashboard.replaceChildren(contagens, extrato, categorias, grupos, series, backup);
+      Render.espacoUsado(backup.querySelector('.espaco-usado'));
+    },
+
+    async espacoUsado(alvo) {
+      const bytes = await Fotos.espacoUsado();
+      if (!bytes || !alvo.isConnected) return;
+      alvo.textContent = `Usando ${Util.formatarBytes(bytes)} neste aparelho, com fotos e dados.`;
+      alvo.hidden = false;
     },
 
     textoNaoLancados(wishlist) {
@@ -2200,9 +2508,12 @@ select.entrada {
       return { campo, valor: () => atual };
     },
 
-    campoFoto(inicial) {
+    // item: o Funko em edição (ou null). A foto atual pode estar dentro do item ou no IndexedDB.
+    campoFoto(item) {
       const SEM_IMAGEM = 'Não há imagem copiada. Copie uma foto e tente de novo.';
-      let foto = inicial;
+      let foto = (item && item.foto) || null;
+      let previa = foto;
+      let alterada = false;
       let ocupado = false;
 
       const preview = el('div', { class: 'foto-preview' });
@@ -2217,13 +2528,20 @@ select.entrada {
       });
 
       const desenhar = () => {
-        preview.replaceChildren(foto ? el('img', { src: foto, alt: 'Foto do Funko' }) : Util.icone('camera'));
+        preview.replaceChildren(previa ? el('img', { src: previa, alt: 'Foto do Funko' }) : Util.icone('camera'));
         btnColar.replaceChildren(Util.icone('colar'), 'Colar foto');
         btnFototeca.replaceChildren(Util.icone('camera'), 'Escolher da fototeca');
         btnColar.disabled = false;
         btnFototeca.disabled = false;
-        btnRemover.hidden = !foto;
+        btnRemover.hidden = !previa;
       };
+      if (!foto && item && item.temFoto) {
+        Fotos.miniatura(item.id).then((mini) => {
+          if (alterada || !mini) return;
+          previa = mini;
+          desenhar();
+        }).catch(() => {});
+      }
 
       const mostrarArea = (mensagem) => {
         dica.textContent = mensagem;
@@ -2245,6 +2563,8 @@ select.entrada {
         btnFototeca.replaceChildren('Preparando foto…');
         try {
           foto = await Util.fotoParaJpeg(imagem);
+          previa = foto;
+          alterada = true;
           area.hidden = true;
           dica.hidden = true;
         } catch (e) {
@@ -2255,7 +2575,13 @@ select.entrada {
       };
 
       btnFototeca.addEventListener('click', () => seletor.click());
-      btnRemover.addEventListener('click', () => { foto = null; desenhar(); btnFototeca.focus(); });
+      btnRemover.addEventListener('click', () => {
+        foto = null;
+        previa = null;
+        alterada = true;
+        desenhar();
+        btnFototeca.focus();
+      });
       seletor.addEventListener('change', () => {
         const arquivo = seletor.files && seletor.files[0];
         seletor.value = '';
@@ -2310,7 +2636,7 @@ select.entrada {
       return {
         campo,
         seletor,
-        valor: () => foto,
+        valor: () => ({ alterada, foto }),
         ligar: () => document.addEventListener('paste', aoColar),
         desligar: () => document.removeEventListener('paste', aoColar),
       };
@@ -2569,7 +2895,7 @@ select.entrada {
       const pago = colecao ? Modais.campoValor({ id: 'f-pago', rotulo: 'Valor pago', valor: item && item.valorPago }) : null;
       const estimado = colecao ? Modais.campoValor({ id: 'f-estimado', rotulo: 'Valor estimado', valor: item && item.valorEstimado }) : null;
 
-      const campoFoto = Modais.campoFoto(item ? item.foto : null);
+      const campoFoto = Modais.campoFoto(item || null);
 
       const nota = colecao ? null : Modais.campoDesejo(item ? (item.desejo || null) : DESEJO_PADRAO);
       const lancamento = colecao ? null : Modais.campoLancamento(item);
@@ -2586,8 +2912,9 @@ select.entrada {
           el('button', { type: 'button', class: 'btn btn-secundario', text: 'Cancelar', on: { click: () => folha.fechar() } }),
           btnSalvar));
 
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (btnSalvar.disabled) return;
         const okNome = Modais.marcarErro(nome, nome.input.value.trim() ? null : 'Digite o nome do Funko.');
         const okCategoria = Modais.marcarErro(categoria, MAPA_CATEGORIAS.has(select.value) ? null : 'Escolha uma categoria.');
         const valorPago = colecao ? Modais.validarValor(pago) : null;
@@ -2604,15 +2931,16 @@ select.entrada {
           nome: nome.input.value.trim(),
           serie: serie.valor(),
           categoria: select.value,
-          foto: campoFoto.valor(),
           valorPago,
           valorEstimado,
           desejo: colecao ? null : nota.valor(),
           ...dadosLancamento,
         };
+        btnSalvar.disabled = true;
         const ok = editando
-          ? Estado.atualizar(tipo, item.id, dados, serie.grupoNovo())
-          : Estado.adicionar(tipo, dados, serie.grupoNovo());
+          ? await Estado.atualizar(tipo, item.id, dados, serie.grupoNovo(), campoFoto.valor())
+          : await Estado.adicionar(tipo, dados, serie.grupoNovo(), campoFoto.valor());
+        btnSalvar.disabled = false;
         if (!ok) return;
         folha.fechar();
         Toast.ok(editando ? 'Alterações salvas' : (colecao ? 'Funko salvo na coleção' : 'Funko salvo na wishlist'));
@@ -2849,7 +3177,7 @@ select.entrada {
         confirmar: 'Excluir Funko',
         perigo: true,
       });
-      if (sim && Estado.excluir(tipo, item.id)) Toast.ok('Funko excluído');
+      if (sim && await Estado.excluir(tipo, item.id)) Toast.ok('Funko excluído');
     },
 
     moverParaColecao(id) {
@@ -2886,18 +3214,27 @@ select.entrada {
      BACKUP
      ======================================================= */
   const Backup = {
-    montarArquivo() {
-      const dados = {
-        app: 'funko-tracker',
-        versao: 2,
-        exportadoEm: new Date().toISOString(),
-        colecao: Estado.listas.colecao,
-        wishlist: Estado.listas.wishlist,
-        series: Estado.listas.series,
-      };
-      const nome = `funko-tracker-backup-${Util.hoje()}.json`;
-      const json = JSON.stringify(dados, null, 2);
-      return { nome, json };
+    // O arquivo leva as fotos dentro de cada Funko, lidas do IndexedDB. Monta em partes para não criar
+    // uma única string gigante na memória do iPhone.
+    async montarArquivo() {
+      const partes = [`{"app":"funko-tracker","versao":2,"exportadoEm":${JSON.stringify(new Date().toISOString())}`];
+      for (const tipo of TIPOS) {
+        const lista = Estado.listas[tipo];
+        partes.push(`,"${tipo}":[`);
+        for (let i = 0; i < lista.length; i += 20) {
+          const lote = lista.slice(i, i + 20);
+          const ids = Fotos.ativo ? lote.filter((x) => x.temFoto && !x.foto).map((x) => x.id) : [];
+          const fotos = ids.length ? await Fotos.lerVarias(ids) : new Map();
+          lote.forEach((item, j) => {
+            const { temFoto, ...resto } = item;
+            const foto = item.foto || (fotos.get(item.id) || {}).foto || null;
+            partes.push(`${i + j ? ',' : ''}${JSON.stringify({ ...resto, foto })}`);
+          });
+        }
+        partes.push(']');
+      }
+      partes.push(`,"series":${JSON.stringify(Estado.listas.series)}}`);
+      return { nome: `funko-tracker-backup-${Util.hoje()}.json`, partes };
     },
 
     registrar() {
@@ -2906,8 +3243,8 @@ select.entrada {
       Toast.ok('Backup exportado');
     },
 
-    baixar(nome, json) {
-      const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+    baixar(nome, partes) {
+      const url = URL.createObjectURL(new Blob(partes, { type: 'application/json' }));
       const link = el('a', { href: url, download: nome, hidden: true });
       document.body.append(link);
       link.click();
@@ -2915,10 +3252,26 @@ select.entrada {
       setTimeout(() => URL.revokeObjectURL(url), 4000);
     },
 
-    async exportar() {
-      const { nome, json } = Backup.montarArquivo();
+    async exportar(evento) {
+      const botao = evento && evento.currentTarget;
+      const textoOriginal = botao ? Array.from(botao.childNodes) : null;
+      if (botao) { botao.disabled = true; botao.replaceChildren('Preparando backup…'); }
+      let arquivo;
+      try {
+        arquivo = await Backup.montarArquivo();
+      } catch (e) {
+        Toast.erro('Não foi possível ler as fotos para o backup. Feche e abra o app e tente de novo.');
+        return;
+      } finally {
+        if (botao && botao.isConnected) { botao.disabled = false; botao.replaceChildren(...textoOriginal); }
+      }
+      await Backup.entregar(arquivo, false);
+    },
+
+    // Share Sheet quando der; se o Safari pedir um toque novo (a leitura das fotos demorou), oferece um botão.
+    async entregar({ nome, partes }, depoisDeToque) {
       let arquivo = null;
-      try { arquivo = new File([json], nome, { type: 'application/json' }); } catch (e) { arquivo = null; }
+      try { arquivo = new File(partes, nome, { type: 'application/json' }); } catch (e) { arquivo = null; }
       if (arquivo && navigator.canShare && navigator.share && navigator.canShare({ files: [arquivo] })) {
         try {
           await navigator.share({ files: [arquivo], title: 'Backup do Funko Tracker' });
@@ -2926,14 +3279,35 @@ select.entrada {
           return;
         } catch (e) {
           if (e && e.name === 'AbortError') return;
+          if (e && e.name === 'NotAllowedError' && !depoisDeToque) {
+            Backup.oferecer({ nome, partes }, arquivo.size);
+            return;
+          }
         }
       }
       try {
-        Backup.baixar(nome, json);
+        Backup.baixar(nome, partes);
         Backup.registrar();
       } catch (e) {
         Toast.erro('Não foi possível gerar o arquivo. Tente de novo pelo Safari.');
       }
+    },
+
+    oferecer(arquivo, tamanho) {
+      let folha;
+      folha = Folha.abrir({
+        rotulo: 'Backup pronto',
+        conteudo: [
+          el('h2', { text: 'Backup pronto' }),
+          el('p', { class: 'folha-texto', text: `O arquivo tem ${Util.formatarBytes(tamanho)}. Toque para escolher onde salvar.` }),
+          el('div', { class: 'form-botoes' },
+            el('button', { type: 'button', class: 'btn btn-secundario', text: 'Cancelar', on: { click: () => folha.fechar() } }),
+            el('button', {
+              type: 'button', class: 'btn btn-primario', text: 'Compartilhar backup', 'data-foco-inicial': true,
+              on: { click: () => { folha.fechar(true); Backup.entregar(arquivo, true); } },
+            })),
+        ],
+      });
     },
 
     escolherArquivo() {
@@ -2963,7 +3337,7 @@ select.entrada {
       }
       const brutoC = Array.isArray(dados.colecao) ? dados.colecao : [];
       const brutoW = Array.isArray(dados.wishlist) ? dados.wishlist : [];
-      const { colecao, wishlist } = Storage.normalizarListas(brutoC, brutoW);
+      const { colecao, wishlist } = Storage.normalizarListas(brutoC, brutoW, false);
       const ignorados = brutoC.length + brutoW.length - colecao.length - wishlist.length;
       const brutasS = versao === 2 && Array.isArray(dados.series) ? dados.series : [];
       const registradas = Storage.normalizarSeries(brutasS);
@@ -2988,7 +3362,10 @@ select.entrada {
         confirmar: 'Substituir dados',
         perigo: atuais > 0,
       });
-      if (sim && Estado.substituirTudo(colecao, wishlist, series)) Toast.ok('Backup importado');
+      if (!sim) return;
+      const nFotos = [...colecao, ...wishlist].filter((i) => i.foto).length;
+      if (nFotos > 10) Toast.ok(`Importando ${nFotos} fotos…`);
+      if (await Estado.substituirTudo(colecao, wishlist, series)) Toast.ok('Backup importado');
     },
   };
 
@@ -3087,6 +3464,20 @@ select.entrada {
   /* =======================================================
      INICIALIZAÇÃO
      ======================================================= */
+  async function prepararFotos() {
+    const ok = await Fotos.abrir();
+    if (!ok) {
+      Toast.erro('Este navegador não liberou o banco de fotos. As fotos ficam no armazenamento antigo, que comporta cerca de 5 MB.');
+      return;
+    }
+    Fotos.pedirPersistencia();
+    try {
+      if (await Fotos.migrar()) Render.tudo();
+    } catch (e) {
+      /* as fotos continuam no localStorage e o app segue funcionando */
+    }
+  }
+
   function iniciar() {
     Render.montar();
     const { colecao, wishlist, series, gravarSeries } = Storage.carregarTudo();
@@ -3099,6 +3490,7 @@ select.entrada {
     if (!Storage.disponivel()) {
       Toast.erro('O navegador bloqueou o armazenamento. Saia da navegação privada para salvar seus Funkos.');
     }
+    prepararFotos();
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js').catch(() => { /* o app segue funcionando online */ });
