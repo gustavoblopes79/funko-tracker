@@ -33,6 +33,7 @@
   --muted-card: #9a9a9a;
   --linha: #2e2e2e;
   --on-accent: #0f0f0f;
+  --lancamento: #fde68a;
 
   --fonte: -apple-system, "SF Pro Text", system-ui, sans-serif;
   --fonte-display: ui-rounded, "SF Pro Rounded", -apple-system, "SF Pro Text", system-ui, sans-serif;
@@ -450,6 +451,22 @@ img { display: block; max-width: 100%; }
 .estrelas .cheias { color: var(--accent); }
 .estrelas .vazias { color: #4a4a4a; }
 
+.tag-lancamento {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 2px 8px;
+  border: 1px dashed var(--lancamento);
+  border-radius: 7px;
+  color: var(--lancamento);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.pop-info .tag { margin-right: 6px; }
+.tag-lancamento svg { width: 13px; height: 13px; flex: none; }
+
 .pop-valores {
   margin: 10px 0 0;
   padding-top: 8px;
@@ -530,6 +547,8 @@ img { display: block; max-width: 100%; }
   font-variant-numeric: tabular-nums;
 }
 .contagem-rotulo { color: var(--muted); font-size: 14px; }
+.contagem-extra { display: flex; align-items: center; gap: 5px; margin-top: 8px; color: var(--lancamento); font-size: 13px; font-weight: 600; }
+.contagem-extra svg { width: 14px; height: 14px; flex: none; }
 
 .extrato {
   background: var(--surface);
@@ -578,6 +597,7 @@ img { display: block; max-width: 100%; }
 .bloco-rodape { display: grid; gap: 10px; margin-top: 16px; }
 .bloco-rodape .bloco-texto { margin: 0; }
 .bloco-nota { margin: 14px 0 0; color: var(--muted); font-size: 15px; }
+.bloco .espaco-usado { margin: 0 0 14px; }
 
 /* =========================================================
    FOLHAS (bottom sheet e action sheet)
@@ -827,6 +847,42 @@ select.entrada {
   white-space: nowrap;
 }
 
+.lancamento { display: grid; gap: 10px; }
+.chave {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  cursor: pointer;
+}
+.chave-texto { display: grid; gap: 2px; }
+.chave-titulo { font-size: 16px; font-weight: 600; }
+.chave-dica { font-size: 14px; color: var(--muted); }
+.chave input { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; }
+.chave-trilho {
+  flex: none;
+  position: relative;
+  width: 51px;
+  height: 31px;
+  border-radius: 16px;
+  background: #3a3a3a;
+  transition: background .2s;
+}
+.chave-trilho::after {
+  content: "";
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 25px; height: 25px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  transition: transform .25s var(--mola);
+}
+.chave input:checked + .chave-trilho { background: var(--accent); }
+.chave input:checked + .chave-trilho::after { transform: translateX(20px); }
+.chave input:focus-visible + .chave-trilho { outline: 2px solid var(--accent); outline-offset: 3px; }
+
 .form-botoes { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; margin-top: 4px; }
 
 /* =========================================================
@@ -862,6 +918,110 @@ select.entrada {
 .toast-sucesso svg { color: #15803d; }
 .toast-erro { background: #3a1d1d; color: #fde2e2; border: 1px solid var(--danger); }
 .toast-erro svg { color: var(--danger); }
+
+/* =========================================================
+   VISUALIZADOR DE FOTO
+   ========================================================= */
+.pop-ver {
+  position: absolute;
+  top: 16px; left: 9px; right: 9px;
+  aspect-ratio: 4 / 5;
+  padding: 0;
+  border: 0;
+  border-radius: 14px 14px 10px 10px;
+  background: none;
+  cursor: zoom-in;
+  z-index: 2;
+}
+.pop-ver:focus-visible { outline-offset: -3px; }
+
+.visor {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  animation: visor-entrar .2s ease-out;
+}
+@keyframes visor-entrar { from { opacity: 0; } to { opacity: 1; } }
+.visor-fundo { position: absolute; inset: 0; background: #000; }
+.visor-topo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: calc(var(--sa-top) + 10px) var(--gutter-r) 10px var(--gutter-l);
+}
+.visor-titulo { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; }
+.visor-titulo h2 {
+  margin: 0;
+  font-family: var(--fonte-display);
+  font-size: 19px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.visor-numero {
+  flex: none;
+  min-width: 36px; height: 36px;
+  padding: 0 7px;
+  border-radius: 18px;
+  border: 2px solid var(--cat);
+  display: grid;
+  place-items: center;
+  font-family: var(--fonte-display);
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.visor-fechar {
+  flex: none;
+  min-width: 44px; min-height: 44px;
+  padding: 0 16px 0 12px;
+  border: 0;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .16);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.visor-fechar svg { width: 20px; height: 20px; }
+.visor-fechar:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.visor-palco { position: relative; flex: 1; min-height: 0; overflow: hidden; touch-action: none; }
+.visor-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform-origin: center;
+  will-change: transform;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+.visor-img.animar { transition: transform .25s var(--mola); }
+.visor-carregando { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 24px; color: #c8c8c8; text-align: center; }
+.visor-dica {
+  position: relative;
+  margin: 0;
+  padding: 10px var(--gutter-r) calc(var(--sa-bottom) + 14px) var(--gutter-l);
+  text-align: center;
+  color: #b8b8b8;
+  font-size: 14px;
+}
+
+button.foto-preview { padding: 0; font: inherit; }
+button.foto-preview:not(:disabled) { cursor: zoom-in; }
+button.foto-preview:disabled { opacity: 1; }
 
 /* =========================================================
    MOVIMENTO REDUZIDO
@@ -921,13 +1081,19 @@ select.entrada {
     { nome: 'Metallic', cor: '#d4a373' },
     { nome: 'Diamond', cor: '#a5f3fc' },
     { nome: 'Chrome', cor: '#e2e8f0' },
+    { nome: 'Jumbo', cor: '#a5b4fc' },
+    { nome: 'Super', cor: '#fda4af' },
+    { nome: 'Plus', cor: '#5eead4' },
   ];
   const MAPA_CATEGORIAS = new Map(CATEGORIAS.map((c) => [c.nome, c]));
   const CHAVES = { colecao: 'funko_colecao', wishlist: 'funko_wishlist', series: 'funko_series' };
   const CHAVE_ULTIMO_BACKUP = 'funko_ultimo_backup';
   const TIPOS = ['colecao', 'wishlist'];
-  const FOTO_LADO_MAX = 800;
-  const FOTO_QUALIDADE = 0.7;
+  const FOTO_LADO_MAX = 1200;
+  const FOTO_QUALIDADE = 0.8;
+  const MINIATURA_LADO = 480;
+  const MINIATURA_QUALIDADE = 0.75;
+  const BANCO_FOTOS = 'funko-tracker-fotos';
   const TOQUE_LONGO_MS = 500;
   const DESEJO_PADRAO = 3;
   const SERIE_MAX = 120;
@@ -993,6 +1159,8 @@ select.entrada {
     colar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M9 4.5H7A1.5 1.5 0 0 0 5.5 6v13A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2"/><rect x="9" y="3" width="6" height="3.5" rx="1"/><path d="M9 15l2-2.5 1.6 2 1.4-1.5L16 15.5H8.5"/></svg>',
     pasta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5A1.5 1.5 0 0 1 5 5h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z"/></svg>',
     mesclar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v5a4 4 0 0 0 4 4h2a4 4 0 0 1 4 4v5"/><path d="M18 3v5a4 4 0 0 1-4 4"/><path d="M13 18l3 3 3-3"/></svg>',
+    relogio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+    fechar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
     ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     alerta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.5"/></svg>',
@@ -1122,21 +1290,27 @@ select.entrada {
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     },
 
-    carregarImagem(arquivo) {
+    // Aceita um arquivo/Blob (cria e revoga a URL temporária) ou uma data URL.
+    carregarImagem(fonte) {
       return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(arquivo);
+        const url = typeof fonte === 'string' ? fonte : URL.createObjectURL(fonte);
+        const liberar = () => { if (typeof fonte !== 'string') URL.revokeObjectURL(url); };
         const img = new Image();
-        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('imagem ilegível')); };
+        img.onload = () => { liberar(); resolve(img); };
+        img.onerror = () => { liberar(); reject(new Error('imagem ilegível')); };
         img.src = url;
       });
     },
 
-    async fotoParaJpeg(arquivo) {
-      const img = await Util.carregarImagem(arquivo);
+    fotoParaJpeg(arquivo) {
+      return Util.reduzirImagem(arquivo, FOTO_LADO_MAX, FOTO_QUALIDADE);
+    },
+
+    async reduzirImagem(fonte, ladoMax, qualidade) {
+      const img = await Util.carregarImagem(fonte);
       const maior = Math.max(img.naturalWidth, img.naturalHeight);
       if (!maior) throw new Error('imagem vazia');
-      const escala = Math.min(1, FOTO_LADO_MAX / maior);
+      const escala = Math.min(1, ladoMax / maior);
       const largura = Math.max(1, Math.round(img.naturalWidth * escala));
       const altura = Math.max(1, Math.round(img.naturalHeight * escala));
       const canvas = document.createElement('canvas');
@@ -1146,7 +1320,13 @@ select.entrada {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, largura, altura);
       ctx.drawImage(img, 0, 0, largura, altura);
-      return canvas.toDataURL('image/jpeg', FOTO_QUALIDADE);
+      return canvas.toDataURL('image/jpeg', qualidade);
+    },
+
+    formatarBytes(bytes) {
+      if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+      const mb = bytes / (1024 * 1024);
+      return `${mb.toLocaleString('pt-BR', { maximumFractionDigits: mb < 10 ? 1 : 0 })} MB`;
     },
 
     dataUrlParaBlob(url) {
@@ -1249,8 +1429,14 @@ select.entrada {
       return Number.isInteger(n) && n >= 1 && n <= 5 ? n : null;
     },
 
+    // Só a wishlist tem "ainda não lançado"; backups antigos sem o campo valem como já lançado.
+    lancamento(bruto) {
+      const naoLancado = bruto.naoLancado === true;
+      return { naoLancado, lancamento: naoLancado ? Storage.texto(bruto.lancamento, 20) : '' };
+    },
+
     // Valida e normaliza um item lido do disco ou de um backup. Devolve null se não der para salvar.
-    normalizar(bruto, tipo, idsVistos) {
+    normalizar(bruto, tipo, idsVistos, confiarTemFoto = true) {
       if (!bruto || typeof bruto !== 'object' || Array.isArray(bruto)) return null;
       const nome = Storage.texto(bruto.nome, 120);
       if (!nome) return null;
@@ -1267,18 +1453,21 @@ select.entrada {
         serie: Storage.texto(bruto.serie, 120),
         categoria,
         foto,
+        temFoto: Boolean(foto) || (confiarTemFoto && bruto.temFoto === true),
         valorPago: tipo === 'colecao' ? Storage.numero(bruto.valorPago) : null,
         valorEstimado: tipo === 'colecao' ? Storage.numero(bruto.valorEstimado) : null,
         desejo: tipo === 'wishlist' ? Storage.desejo(bruto.desejo) : null,
+        ...(tipo === 'wishlist' ? Storage.lancamento(bruto) : {}),
         dataCriacao: Number.isNaN(data.getTime()) ? new Date().toISOString() : data.toISOString(),
         tipo,
       };
     },
 
-    normalizarListas(colecaoBruta, wishlistBruta) {
+    // Do localStorage vale o "temFoto"; de um backup, só conta a foto que veio dentro do arquivo.
+    normalizarListas(colecaoBruta, wishlistBruta, confiarTemFoto = true) {
       const ids = new Set();
-      const colecao = colecaoBruta.map((i) => Storage.normalizar(i, 'colecao', ids)).filter(Boolean);
-      const wishlist = wishlistBruta.map((i) => Storage.normalizar(i, 'wishlist', ids)).filter(Boolean);
+      const colecao = colecaoBruta.map((i) => Storage.normalizar(i, 'colecao', ids, confiarTemFoto)).filter(Boolean);
+      const wishlist = wishlistBruta.map((i) => Storage.normalizar(i, 'wishlist', ids, confiarTemFoto)).filter(Boolean);
       return { colecao, wishlist };
     },
 
@@ -1332,6 +1521,197 @@ select.entrada {
       const series = Storage.completarSeries(Storage.normalizarSeries(brutas), colecao, wishlist);
       const gravarSeries = Storage.lerTexto(CHAVES.series) === null || series.length !== brutas.length;
       return { colecao, wishlist, series, gravarSeries };
+    },
+  };
+
+  /* =======================================================
+     FOTOS: IndexedDB ("fotos" = foto inteira, "miniaturas" = versão leve dos cards)
+     ======================================================= */
+  const Fotos = {
+    banco: null,
+    ativo: false,
+    pronto: Promise.resolve(false),
+    miniaturas: new Map(),
+    fila: Promise.resolve(),
+
+    abrir() {
+      const abertura = new Promise((resolve) => {
+        let pedido;
+        try {
+          if (!window.indexedDB) { resolve(false); return; }
+          pedido = window.indexedDB.open(BANCO_FOTOS, 1);
+        } catch (e) {
+          resolve(false);
+          return;
+        }
+        pedido.onupgradeneeded = () => {
+          const banco = pedido.result;
+          if (!banco.objectStoreNames.contains('fotos')) banco.createObjectStore('fotos');
+          if (!banco.objectStoreNames.contains('miniaturas')) banco.createObjectStore('miniaturas');
+        };
+        pedido.onsuccess = () => {
+          Fotos.banco = pedido.result;
+          Fotos.banco.onversionchange = () => Fotos.banco.close();
+          Fotos.ativo = true;
+          resolve(true);
+        };
+        pedido.onerror = () => resolve(false);
+        pedido.onblocked = () => resolve(false);
+      });
+      // Algumas versões do Safari travam a abertura em modo privado: depois de 5 s, segue sem banco.
+      const limite = new Promise((resolve) => setTimeout(() => resolve(false), 5000));
+      Fotos.pronto = Promise.race([abertura, limite]).then((ok) => {
+        if (!ok) Fotos.ativo = false;
+        return Fotos.ativo;
+      });
+      return Fotos.pronto;
+    },
+
+    transacao(lojas, modo, trabalho) {
+      return new Promise((resolve, reject) => {
+        let tx;
+        try {
+          tx = Fotos.banco.transaction(lojas, modo);
+        } catch (e) {
+          reject(e);
+          return;
+        }
+        const resultado = {};
+        tx.oncomplete = () => resolve(resultado);
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error || new Error('transação cancelada'));
+        try {
+          trabalho(Object.fromEntries(lojas.map((n) => [n, tx.objectStore(n)])), resultado);
+        } catch (e) {
+          try { tx.abort(); } catch (erro) { /* a transação já terminou */ }
+          reject(e);
+        }
+      });
+    },
+
+    // Lê foto e miniatura de vários Funkos: Map id → { foto, miniatura }.
+    async lerVarias(ids) {
+      const mapa = new Map();
+      for (let i = 0; i < ids.length; i += 25) {
+        const lote = ids.slice(i, i + 25);
+        await Fotos.transacao(['fotos', 'miniaturas'], 'readonly', (l) => {
+          for (const id of lote) {
+            const registro = { foto: null, miniatura: null };
+            mapa.set(id, registro);
+            l.fotos.get(id).onsuccess = (e) => { registro.foto = e.target.result || null; };
+            l.miniaturas.get(id).onsuccess = (e) => { registro.miniatura = e.target.result || null; };
+          }
+        });
+      }
+      return mapa;
+    },
+
+    async ler(loja, id) {
+      const r = await Fotos.transacao([loja], 'readonly', (l, res) => {
+        l[loja].get(id).onsuccess = (e) => { res.valor = e.target.result || null; };
+      });
+      return r.valor || null;
+    },
+
+    // Grava em lotes. Foto null apaga; sem miniatura, a antiga sai e uma nova é gerada quando o card aparecer.
+    async gravar(entradas) {
+      for (let i = 0; i < entradas.length; i += 20) {
+        const lote = entradas.slice(i, i + 20);
+        await Fotos.transacao(['fotos', 'miniaturas'], 'readwrite', (l) => {
+          for (const e of lote) {
+            if (e.foto) l.fotos.put(e.foto, e.id); else l.fotos.delete(e.id);
+            if (e.foto && e.miniatura) l.miniaturas.put(e.miniatura, e.id); else l.miniaturas.delete(e.id);
+          }
+        });
+        for (const e of lote) {
+          if (e.foto && e.miniatura) Fotos.miniaturas.set(e.id, e.miniatura); else Fotos.miniaturas.delete(e.id);
+        }
+      }
+    },
+
+    // Troca fotos guardando as anteriores. Devolve uma função que desfaz a troca.
+    async trocar(entradas) {
+      const antes = await Fotos.lerVarias(entradas.map((e) => e.id));
+      const restaurar = () => Fotos.gravar(entradas.map((e) => ({ id: e.id, ...antes.get(e.id) })));
+      try {
+        await Fotos.gravar(entradas);
+      } catch (erro) {
+        try { await restaurar(); } catch (e) { /* o que não foi gravado continua como estava */ }
+        throw erro;
+      }
+      return restaurar;
+    },
+
+    async completa(id) {
+      if (!(await Fotos.pronto)) return null;
+      return Fotos.ler('fotos', id);
+    },
+
+    async miniatura(id) {
+      if (Fotos.miniaturas.has(id)) return Fotos.miniaturas.get(id);
+      if (!(await Fotos.pronto)) return null;
+      let mini = await Fotos.ler('miniaturas', id);
+      if (!mini) {
+        // Uma de cada vez, para não decodificar muitas fotos grandes juntas.
+        const gerar = Fotos.fila.then(async () => {
+          const foto = await Fotos.ler('fotos', id);
+          if (!foto) return null;
+          const nova = await Util.reduzirImagem(foto, MINIATURA_LADO, MINIATURA_QUALIDADE);
+          await Fotos.transacao(['miniaturas'], 'readwrite', (l) => { l.miniaturas.put(nova, id); }).catch(() => {});
+          return nova;
+        });
+        Fotos.fila = gerar.catch(() => null);
+        mini = await gerar;
+      }
+      if (mini) Fotos.miniaturas.set(id, mini);
+      return mini;
+    },
+
+    // Move para o IndexedDB as fotos que ainda estão dentro dos itens no localStorage.
+    // Só tira do localStorage a foto que foi gravada e lida de volta igual. Rodar de novo não muda nada.
+    async migrar() {
+      const pendentes = [...Estado.listas.colecao, ...Estado.listas.wishlist].filter((i) => i.foto);
+      if (!pendentes.length) return 0;
+      const confirmadas = new Map();
+      for (let i = 0; i < pendentes.length; i += 10) {
+        const lote = pendentes.slice(i, i + 10);
+        try {
+          await Fotos.gravar(lote.map((item) => ({ id: item.id, foto: item.foto })));
+          const lidas = await Fotos.lerVarias(lote.map((item) => item.id));
+          for (const item of lote) {
+            if (lidas.get(item.id).foto === item.foto) confirmadas.set(item.id, item.foto);
+          }
+        } catch (e) {
+          break;
+        }
+      }
+      if (!confirmadas.size) return 0;
+      const tirar = (lista) => lista.map((item) => (item.foto && confirmadas.get(item.id) === item.foto
+        ? { ...item, foto: null, temFoto: true }
+        : item));
+      return Estado.persistir({ colecao: tirar(Estado.listas.colecao), wishlist: tirar(Estado.listas.wishlist) }, { silencioso: true })
+        ? confirmadas.size
+        : 0;
+    },
+
+    pedirPersistencia() {
+      try {
+        if (!navigator.storage || typeof navigator.storage.persist !== 'function') return;
+        const jaPersistido = typeof navigator.storage.persisted === 'function' ? navigator.storage.persisted() : Promise.resolve(false);
+        jaPersistido.then((sim) => (sim ? true : navigator.storage.persist())).catch(() => {});
+      } catch (e) {
+        /* sem a API, o app segue igual */
+      }
+    },
+
+    async espacoUsado() {
+      try {
+        if (!navigator.storage || typeof navigator.storage.estimate !== 'function') return null;
+        const { usage } = await navigator.storage.estimate();
+        return typeof usage === 'number' && usage > 0 ? usage : null;
+      } catch (e) {
+        return null;
+      }
     },
   };
 
@@ -1409,17 +1789,18 @@ select.entrada {
     listas: { colecao: [], wishlist: [], series: [] },
     filtros: {
       colecao: { busca: '', categoria: null, grupo: null, serie: null, agrupar: false },
-      wishlist: { busca: '', categoria: null, grupo: null, serie: null, agrupar: false, ordem: 'recentes' },
+      wishlist: { busca: '', categoria: null, grupo: null, serie: null, agrupar: false, ordem: 'recentes', lancamento: null },
     },
     dashTodasSeries: false,
 
     temFiltro(tipo) {
       const f = Estado.filtros[tipo];
-      return Boolean(f.busca.trim() || f.categoria || f.grupo || f.serie);
+      return Boolean(f.busca.trim() || f.categoria || f.grupo || f.serie || f.lancamento);
     },
 
     limparFiltros(tipo) {
       Object.assign(Estado.filtros[tipo], { busca: '', categoria: null, grupo: null, serie: null });
+      if (tipo === 'wishlist') Estado.filtros.wishlist.lancamento = null;
     },
 
     buscar(tipo, id) {
@@ -1427,14 +1808,14 @@ select.entrada {
     },
 
     // Grava no disco antes de aceitar a mudança; se falhar, o estado em memória continua igual.
-    persistir(novas) {
+    persistir(novas, { silencioso = false } = {}) {
       const gravadas = [];
       for (const tipo of Object.keys(CHAVES)) {
         if (!novas[tipo]) continue;
         const r = Storage.gravar(CHAVES[tipo], novas[tipo]);
         if (!r.ok) {
           for (const t of gravadas) Storage.gravar(CHAVES[t], Estado.listas[t]);
-          Toast.erro(r.cota
+          if (!silencioso) Toast.erro(r.cota
             ? 'Sem espaço para salvar. Exporte um backup e remova fotos ou Funkos antigos.'
             : 'O navegador bloqueou o salvamento. Saia da navegação privada e tente de novo.');
           return false;
@@ -1446,10 +1827,43 @@ select.entrada {
       return true;
     },
 
-    adicionar(tipo, dados, grupoSerie) {
+    // Com o IndexedDB, a foto sai do item e fica só a marcação temFoto. Sem ele, a foto vai dentro do item.
+    comFoto(item, foto) {
+      return Fotos.ativo
+        ? { ...item, foto: null, temFoto: Boolean(foto) }
+        : { ...item, foto: foto || null, temFoto: Boolean(foto) };
+    },
+
+    // Grava as fotos primeiro e o localStorage depois; se o localStorage falhar, as fotos voltam como eram.
+    async persistirComFotos(novas, fotos, { miniaturas = false } = {}) {
+      if (!fotos.length || !Fotos.ativo) return Estado.persistir(novas);
+      let desfazer;
+      try {
+        const entradas = [];
+        for (const f of fotos) {
+          entradas.push(f.foto && miniaturas
+            ? { ...f, miniatura: await Util.reduzirImagem(f.foto, MINIATURA_LADO, MINIATURA_QUALIDADE) }
+            : f);
+        }
+        desfazer = await Fotos.trocar(entradas);
+      } catch (e) {
+        Toast.erro(e && e.name === 'QuotaExceededError'
+          ? 'Sem espaço para salvar a foto. Exporte um backup e apague fotos que você não usa mais.'
+          : 'Não foi possível salvar a foto. Tente de novo; se continuar, exporte um backup.');
+        return false;
+      }
+      if (Estado.persistir(novas)) return true;
+      try { await desfazer(); } catch (e) { /* a foto anterior continua no banco */ }
+      return false;
+    },
+
+    // fotoValor: { alterada, foto } vindo do formulário.
+    adicionar(tipo, dados, grupoSerie, fotoValor) {
       const { series, nome: serie } = Series.incluir(Estado.listas.series, dados.serie, grupoSerie);
-      const item = {
-        id: Util.gerarId(),
+      const id = Util.gerarId();
+      const foto = fotoValor && fotoValor.alterada ? fotoValor.foto : null;
+      const item = Estado.comFoto({
+        id,
         ...dados,
         serie,
         valorPago: tipo === 'colecao' ? dados.valorPago : null,
@@ -1457,33 +1871,44 @@ select.entrada {
         desejo: tipo === 'wishlist' ? dados.desejo : null,
         dataCriacao: new Date().toISOString(),
         tipo,
-      };
+      }, foto);
       const novas = { [tipo]: [item, ...Estado.listas[tipo]] };
       if (series !== Estado.listas.series) novas.series = series;
-      return Estado.persistir(novas);
+      return Estado.persistirComFotos(novas, foto ? [{ id, foto }] : [], { miniaturas: true });
     },
 
-    atualizar(tipo, id, dados, grupoSerie) {
+    atualizar(tipo, id, dados, grupoSerie, fotoValor) {
       const { series, nome: serie } = Series.incluir(Estado.listas.series, dados.serie, grupoSerie);
-      const lista = Estado.listas[tipo].map((i) => (i.id === id ? { ...i, ...dados, serie } : i));
+      const atual = Estado.buscar(tipo, id);
+      const mudou = Boolean(fotoValor && fotoValor.alterada);
+      const lista = Estado.listas[tipo].map((i) => {
+        if (i.id !== id) return i;
+        const novo = { ...i, ...dados, serie };
+        return mudou ? Estado.comFoto(novo, fotoValor.foto) : novo;
+      });
       const novas = { [tipo]: lista };
       if (series !== Estado.listas.series) novas.series = series;
-      return Estado.persistir(novas);
+      const fotos = mudou && (fotoValor.foto || (atual && atual.temFoto)) ? [{ id, foto: fotoValor.foto }] : [];
+      return Estado.persistirComFotos(novas, fotos, { miniaturas: true });
     },
 
     excluir(tipo, id) {
-      return Estado.persistir({ [tipo]: Estado.listas[tipo].filter((i) => i.id !== id) });
+      const item = Estado.buscar(tipo, id);
+      const novas = { [tipo]: Estado.listas[tipo].filter((i) => i.id !== id) };
+      return Estado.persistirComFotos(novas, item && item.temFoto ? [{ id, foto: null }] : []);
     },
 
     mover(id, de, para, valores) {
       const item = Estado.buscar(de, id);
       if (!item) return false;
+      const { naoLancado, lancamento, ...resto } = item;
       const movido = {
-        ...item,
+        ...resto,
         tipo: para,
         valorPago: para === 'colecao' ? valores.valorPago : null,
         valorEstimado: para === 'colecao' ? valores.valorEstimado : null,
         desejo: null,
+        ...(para === 'wishlist' ? { naoLancado: false, lancamento: '' } : {}),
       };
       return Estado.persistir({
         [de]: Estado.listas[de].filter((i) => i.id !== id),
@@ -1527,17 +1952,32 @@ select.entrada {
       return Estado.persistir({ series: Estado.listas.series.filter((x) => x.id !== id) });
     },
 
+    // Importação: as fotos do backup vão para o IndexedDB e as fotos dos Funkos que saem são apagadas.
     substituirTudo(colecao, wishlist, series) {
-      return Estado.persistir({ colecao, wishlist, series });
+      if (!Fotos.ativo) return Estado.persistir({ colecao, wishlist, series });
+      const fotos = [];
+      const comFoto = new Set();
+      const tirar = (lista) => lista.map((item) => {
+        if (!item.foto) return { ...item, temFoto: false };
+        fotos.push({ id: item.id, foto: item.foto });
+        comFoto.add(item.id);
+        return { ...item, foto: null, temFoto: true };
+      });
+      const novas = { colecao: tirar(colecao), wishlist: tirar(wishlist), series };
+      for (const item of [...Estado.listas.colecao, ...Estado.listas.wishlist]) {
+        if (item.temFoto && !comFoto.has(item.id)) fotos.push({ id: item.id, foto: null });
+      }
+      return Estado.persistirComFotos(novas, fotos);
     },
 
     visiveis(tipo) {
-      const { busca, categoria, grupo, serie, ordem } = Estado.filtros[tipo];
+      const { busca, categoria, grupo, serie, ordem, lancamento } = Estado.filtros[tipo];
       const termo = Util.normalizarBusca(busca);
       const porData = (a, b) => (a.dataCriacao < b.dataCriacao ? 1 : a.dataCriacao > b.dataCriacao ? -1 : 0);
       const porDesejo = (a, b) => (b.desejo || 0) - (a.desejo || 0) || porData(a, b);
       return Estado.listas[tipo]
         .filter((i) => !categoria || i.categoria === categoria)
+        .filter((i) => !lancamento || (lancamento === 'nao' ? i.naoLancado === true : i.naoLancado !== true))
         .filter((i) => !grupo || (Util.chaveSerie(i.serie) && Series.grupoDe(i.serie) === grupo))
         .filter((i) => !serie || Util.chaveSerie(i.serie) === serie)
         .filter((i) => !termo || [i.nome, i.serie, i.numero].some((c) => Util.normalizarBusca(c).includes(termo)))
@@ -1632,8 +2072,15 @@ select.entrada {
         type: 'button', class: 'limpar-filtros', hidden: true,
         on: { click: () => { Estado.limparFiltros(tipo); Render.lista(tipo); } },
       }, 'Limpar filtros');
-      const filtrosExtra = el('div', { class: 'filtros-extra', role: 'group', 'aria-label': 'Filtrar por grupo e série' },
-        selGrupo, selSerie, btnAgrupar, btnLimpar);
+      const criarLancamento = (valor, texto) => el('button', {
+        type: 'button', class: 'chip chip-agrupar', 'aria-pressed': 'false', dataset: { lancamento: valor },
+        on: { click: () => { filtro.lancamento = filtro.lancamento === valor ? null : valor; Render.lista(tipo); } },
+      }, texto);
+      const chipsLancamento = tipo === 'wishlist' ? [criarLancamento('nao', 'Não lançado'), criarLancamento('ja', 'Já lançado')] : [];
+      const filtrosExtra = el('div', {
+        class: 'filtros-extra', role: 'group',
+        'aria-label': tipo === 'wishlist' ? 'Filtrar por lançamento, grupo e série' : 'Filtrar por grupo e série',
+      }, chipsLancamento, selGrupo, selSerie, btnAgrupar, btnLimpar);
 
       const barra = el('div', { class: 'barra-busca' }, el('div', { class: 'campo-busca' }, Util.icone('busca'), busca));
       const criarOrdem = (valor, texto) => el('button', {
@@ -1646,7 +2093,7 @@ select.entrada {
         : null;
       Util.anexar(painel, [barra, chips, filtrosExtra, ordenacao, grade, vazio]);
       Interacoes.ligarCards(grade, tipo);
-      return { barra, busca, chips, filtrosExtra, selGrupo, selSerie, btnAgrupar, btnLimpar, ordenacao, grade, vazio };
+      return { barra, busca, chips, filtrosExtra, chipsLancamento, selGrupo, selSerie, btnAgrupar, btnLimpar, ordenacao, grade, vazio };
     },
 
     tudo() {
@@ -1691,9 +2138,11 @@ select.entrada {
       }
 
       const temSeries = Render.filtrosDeSerie(tipo, refs);
-      refs.filtrosExtra.hidden = !temItens || (!temSeries && !Estado.temFiltro(tipo));
+      for (const chip of refs.chipsLancamento) chip.setAttribute('aria-pressed', String(chip.dataset.lancamento === filtro.lancamento));
+      refs.filtrosExtra.hidden = !temItens || (!temSeries && !refs.chipsLancamento.length && !Estado.temFiltro(tipo));
 
       const itens = Estado.visiveis(tipo);
+      if (Render.observadores[tipo]) Render.observadores[tipo].disconnect();
       if (itens.length && filtro.agrupar && temSeries) {
         refs.grade.replaceChildren(...Render.secoes(itens, tipo));
       } else {
@@ -1770,7 +2219,10 @@ select.entrada {
       const filtro = Estado.filtros[tipo];
       if (Estado.listas[tipo].length && Estado.temFiltro(tipo)) {
         let texto;
-        if (filtro.grupo || filtro.serie) texto = 'Nenhum Funko combina com os filtros escolhidos. Tire um filtro ou limpe todos.';
+        const soLancamento = filtro.lancamento && !filtro.busca.trim() && !filtro.categoria && !filtro.grupo && !filtro.serie;
+        if (soLancamento && filtro.lancamento === 'nao') texto = 'Nenhum Funko da wishlist está marcado como não lançado. Para marcar, edite um Funko e ligue “Ainda não lançado”.';
+        else if (soLancamento) texto = 'Todos os Funkos da wishlist estão marcados como não lançados. Quando um sair, edite e desligue “Ainda não lançado”.';
+        else if (filtro.lancamento || filtro.grupo || filtro.serie) texto = 'Nenhum Funko combina com os filtros escolhidos. Tire um filtro ou limpe todos.';
         else if (filtro.busca && filtro.categoria) texto = `Nenhum ${filtro.categoria} combina com “${filtro.busca.trim()}”.`;
         else if (filtro.busca) texto = `Nenhum Funko combina com “${filtro.busca.trim()}”. Confira a grafia ou busque pelo número.`;
         else texto = `Você ainda não tem nenhum ${filtro.categoria} aqui.`;
@@ -1825,9 +2277,42 @@ select.entrada {
         el('span', { class: 'vazias', text: '★'.repeat(5 - nota) }));
     },
 
+    // Carrega a miniatura só quando o card chega perto da tela.
+    observadores: {},
+
+    observarFoto(img, id, tipo) {
+      const cache = Fotos.miniaturas.get(id);
+      if (cache) { img.src = cache; return; }
+      img.dataset.fotoId = id;
+      if (!('IntersectionObserver' in window)) { Render.carregarFoto(img); return; }
+      if (!Render.observadores[tipo]) {
+        Render.observadores[tipo] = new IntersectionObserver((entradas, obs) => {
+          for (const e of entradas) {
+            if (!e.isIntersecting) continue;
+            obs.unobserve(e.target);
+            Render.carregarFoto(e.target);
+          }
+        }, { root: dom.conteudo, rootMargin: '600px 0px' });
+      }
+      Render.observadores[tipo].observe(img);
+    },
+
+    carregarFoto(img) {
+      Fotos.miniatura(img.dataset.fotoId)
+        .then((src) => { if (src) img.src = src; })
+        .catch(() => { /* fica a moldura vazia */ });
+    },
+
     card(item, tipo) {
+      let imagem = null;
+      if (item.foto) {
+        imagem = el('img', { src: item.foto, alt: '', decoding: 'async', draggable: 'false' });
+      } else if (item.temFoto) {
+        imagem = el('img', { alt: '', decoding: 'async', draggable: 'false' });
+        Render.observarFoto(imagem, item.id, tipo);
+      }
       const janela = el('div', { class: 'pop-janela' },
-        item.foto ? el('img', { src: item.foto, alt: '', loading: 'lazy', decoding: 'async', draggable: 'false' }) : Render.silhueta(item),
+        imagem || Render.silhueta(item),
         item.numero ? el('span', { class: 'pop-numero', 'aria-hidden': 'true' }, item.numero) : null,
       );
 
@@ -1835,6 +2320,9 @@ select.entrada {
         el('h3', { class: 'pop-nome', text: item.nome }),
         item.serie ? el('p', { class: 'pop-serie', text: (Series.doRegistro(item.serie) || { nome: item.serie }).nome }) : null,
         el('span', { class: 'tag', text: item.categoria }),
+        tipo === 'wishlist' && item.naoLancado
+          ? el('span', { class: 'tag-lancamento' }, Util.icone('relogio'), item.lancamento ? `Não lançado, sai em ${item.lancamento}` : 'Não lançado')
+          : null,
         tipo === 'wishlist' && item.desejo ? Render.estrelas(item.desejo) : null,
         tipo === 'colecao' ? el('dl', { class: 'pop-valores' },
           el('dt', { text: 'Pago' }), el('dd', { text: Util.formatarMoeda(item.valorPago) }),
@@ -1847,6 +2335,7 @@ select.entrada {
         class: 'pop', role: 'listitem', dataset: { id: item.id }, vars: Util.varsCategoria(item.categoria),
       },
         el('button', { type: 'button', class: 'pop-corpo', 'aria-label': `Editar ${rotulo}` }, janela, info),
+        imagem ? el('button', { type: 'button', class: 'pop-ver', 'aria-label': `Ver foto de ${item.nome} em tamanho grande` }) : null,
         el('button', { type: 'button', class: 'pop-mais', 'aria-label': `Mais ações para ${item.nome}` },
           el('span', null, Util.icone('reticencias'))),
       );
@@ -1865,7 +2354,8 @@ select.entrada {
           el('span', { class: 'contagem-rotulo', text: colecao.length === 1 ? 'Funko na coleção' : 'Funkos na coleção' })),
         el('div', { class: 'contagem' },
           el('span', { class: 'contagem-num', text: String(wishlist.length) }),
-          el('span', { class: 'contagem-rotulo', text: wishlist.length === 1 ? 'Funko na wishlist' : 'Funkos na wishlist' })),
+          el('span', { class: 'contagem-rotulo', text: wishlist.length === 1 ? 'Funko na wishlist' : 'Funkos na wishlist' }),
+          wishlist.length ? el('span', { class: 'contagem-extra' }, Util.icone('relogio'), Render.textoNaoLancados(wishlist)) : null),
       );
 
       const extrato = el('section', { class: 'extrato', 'aria-labelledby': 'titulo-extrato' },
@@ -1952,12 +2442,26 @@ select.entrada {
         el('p', { class: 'bloco-texto', text: dataUltimo
           ? `Último backup em ${dataUltimo}. O Safari pode apagar os dados de apps sem uso, então exporte com frequência.`
           : 'Você ainda não fez backup. O Safari pode apagar os dados de apps sem uso: exporte um arquivo e guarde no iCloud Drive.' }),
+        el('p', { class: 'bloco-nota espaco-usado', hidden: true }),
         el('div', { class: 'backup-botoes' },
           el('button', { type: 'button', class: 'btn btn-primario btn-largo', on: { click: Backup.exportar } }, Util.icone('exportar'), 'Exportar backup (JSON)'),
           el('button', { type: 'button', class: 'btn btn-secundario btn-largo', on: { click: Backup.escolherArquivo } }, Util.icone('importar'), 'Importar backup')),
       );
 
       dom.dashboard.replaceChildren(contagens, extrato, categorias, grupos, series, backup);
+      Render.espacoUsado(backup.querySelector('.espaco-usado'));
+    },
+
+    async espacoUsado(alvo) {
+      const bytes = await Fotos.espacoUsado();
+      if (!bytes || !alvo.isConnected) return;
+      alvo.textContent = `Usando ${Util.formatarBytes(bytes)} neste aparelho, com fotos e dados.`;
+      alvo.hidden = false;
+    },
+
+    textoNaoLancados(wishlist) {
+      const n = wishlist.filter((i) => i.naoLancado).length;
+      return n ? `${Util.plural(n, 'ainda não lançado', 'ainda não lançados')}` : 'Todos já lançados';
     },
 
     blocoBarras({ id, titulo, total, linhas, vazio, rodape = null }) {
@@ -2033,6 +2537,7 @@ select.entrada {
       };
 
       const teclado = (e) => {
+        if (Visor.aberto) return;
         if (e.key === 'Escape') {
           if (e.target instanceof Element && e.target.getAttribute('aria-expanded') === 'true') return;
           e.preventDefault();
@@ -2058,6 +2563,221 @@ select.entrada {
       const alvo = painel.querySelector('[data-foco-inicial]') || painel.querySelector('button, input, select');
       if (alvo) alvo.focus({ preventScroll: true });
       return controle;
+    },
+  };
+
+  // Visualizador em tela cheia, com pinça, toque duplo, arrastar e arrastar para baixo para fechar.
+  const Visor = {
+    aberto: null,
+
+    async abrir({ item, origem, foto = null }) {
+      if (Visor.aberto) Visor.aberto();
+      const focoAnterior = origem || document.activeElement;
+      const idCard = origem && origem.closest('.pop') ? origem.closest('.pop').dataset.id : null;
+      const reduzir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const img = el('img', { class: 'visor-img', alt: `Foto de ${item.nome}`, draggable: 'false', hidden: true });
+      const carregando = el('p', { class: 'visor-carregando', role: 'status', text: 'Carregando foto…' });
+      const palco = el('div', { class: 'visor-palco' }, img, carregando);
+      const fundo = el('div', { class: 'visor-fundo' });
+      const btnFechar = el('button', { type: 'button', class: 'visor-fechar', 'aria-label': 'Fechar foto' }, Util.icone('fechar'), 'Fechar');
+      const topo = el('div', { class: 'visor-topo' },
+        el('div', { class: 'visor-titulo' },
+          item.numero ? el('span', { class: 'visor-numero', 'aria-hidden': 'true', text: item.numero }) : null,
+          el('h2', { id: 'visor-titulo', text: item.numero ? `${item.nome}` : item.nome })),
+        btnFechar);
+      const dica = el('p', { class: 'visor-dica', text: 'Toque duas vezes ou use dois dedos para ampliar.' });
+      const visor = el('div', {
+        class: 'visor', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'visor-titulo',
+        'aria-describedby': item.numero ? 'visor-numero' : null, vars: Util.varsCategoria(item.categoria),
+      }, fundo, topo, palco, item.numero ? el('span', { id: 'visor-numero', class: 'sr-only', text: `Número ${item.numero}` }) : null, dica);
+
+      // Tudo atrás do visualizador fica inerte: app, folhas abertas e toasts.
+      const inertes = [dom.app, ...document.querySelectorAll('.camada')].map((n) => [n, n.inert]);
+      inertes.forEach(([n]) => { n.inert = true; });
+
+      let s = 1;
+      let tx = 0;
+      let ty = 0;
+      const pontos = new Map();
+      let gesto = null;
+      let moveu = false;
+      let ultimoToque = { t: 0, x: 0, y: 0 };
+      let timerToque = null;
+
+      const limitarEscala = (v) => Math.min(4, Math.max(1, v));
+      const relativo = (p) => {
+        const r = palco.getBoundingClientRect();
+        return { x: p.x - r.left - r.width / 2, y: p.y - r.top - r.height / 2 };
+      };
+      const conteudo = () => {
+        const r = palco.getBoundingClientRect();
+        const k = Math.min(r.width / (img.naturalWidth || 1), r.height / (img.naturalHeight || 1));
+        return { r, w: (img.naturalWidth || 1) * k, h: (img.naturalHeight || 1) * k };
+      };
+      const prender = () => {
+        const { r, w, h } = conteudo();
+        const mx = Math.max(0, (w * s - r.width) / 2);
+        const my = Math.max(0, (h * s - r.height) / 2);
+        tx = Math.min(mx, Math.max(-mx, tx));
+        ty = Math.min(my, Math.max(-my, ty));
+      };
+      const aplicar = (animar, extra = '') => {
+        img.classList.toggle('animar', Boolean(animar) && !reduzir);
+        img.style.transform = `translate(${tx}px, ${ty}px) scale(${s})${extra}`;
+      };
+      const zoomEm = (novo, ponto) => {
+        const u = { x: (ponto.x - tx) / s, y: (ponto.y - ty) / s };
+        s = limitarEscala(novo);
+        tx = ponto.x - s * u.x;
+        ty = ponto.y - s * u.y;
+        if (s === 1) { tx = 0; ty = 0; }
+        prender();
+      };
+      const naImagem = (p) => {
+        const { w, h } = conteudo();
+        const q = relativo(p);
+        return Math.abs(q.x - tx) <= (w * s) / 2 && Math.abs(q.y - ty) <= (h * s) / 2;
+      };
+      const distancia = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+      const meio = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+
+      const fechar = () => {
+        if (Visor.aberto !== fechar) return;
+        Visor.aberto = null;
+        clearTimeout(timerToque);
+        document.removeEventListener('keydown', teclado, true);
+        document.removeEventListener('gesturestart', bloquear);
+        document.removeEventListener('gesturechange', bloquear);
+        visor.remove();
+        inertes.forEach(([n, antes]) => { n.inert = antes; });
+        let alvo = focoAnterior && focoAnterior.isConnected ? focoAnterior : null;
+        if (!alvo && idCard) alvo = document.querySelector(`.pop[data-id="${CSS.escape(idCard)}"] .pop-ver`);
+        if (alvo) alvo.focus({ preventScroll: true });
+      };
+      const bloquear = (e) => e.preventDefault();
+      const teclado = (e) => {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); fechar(); return; }
+        if (e.key === 'Tab') { e.preventDefault(); btnFechar.focus(); return; }
+        const centro = { x: 0, y: 0 };
+        if (e.key === '+' || e.key === '=') { zoomEm(s * 1.5, centro); aplicar(true); }
+        else if (e.key === '-') { zoomEm(s / 1.5, centro); aplicar(true); }
+        else if (e.key === '0') { zoomEm(1, centro); aplicar(true); }
+      };
+
+      palco.addEventListener('pointerdown', (e) => {
+        if (img.hidden) return;
+        try { palco.setPointerCapture(e.pointerId); } catch (erro) { /* ponteiro já liberado */ }
+        pontos.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (pontos.size === 1) moveu = false;
+        if (pontos.size === 2) {
+          const [a, b] = Array.from(pontos.values());
+          gesto = { tipo: 'pinca', s0: s, tx0: tx, ty0: ty, d0: distancia(a, b) || 1, m0: relativo(meio(a, b)) };
+          moveu = true;
+        } else if (pontos.size === 1) {
+          gesto = s > 1
+            ? { tipo: 'arrastar', x0: e.clientX, y0: e.clientY, tx0: tx, ty0: ty }
+            : { tipo: 'descer', x0: e.clientX, y0: e.clientY };
+        }
+      });
+      palco.addEventListener('pointermove', (e) => {
+        if (!pontos.has(e.pointerId) || !gesto) return;
+        pontos.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (gesto.tipo === 'pinca' && pontos.size >= 2) {
+          const [a, b] = Array.from(pontos.values());
+          const u = { x: (gesto.m0.x - gesto.tx0) / gesto.s0, y: (gesto.m0.y - gesto.ty0) / gesto.s0 };
+          const m = relativo(meio(a, b));
+          s = limitarEscala(gesto.s0 * (distancia(a, b) / gesto.d0));
+          tx = m.x - s * u.x;
+          ty = m.y - s * u.y;
+          prender();
+          aplicar(false);
+          return;
+        }
+        const dx = e.clientX - gesto.x0;
+        const dy = e.clientY - gesto.y0;
+        if (Math.hypot(dx, dy) > 8) moveu = true;
+        if (gesto.tipo === 'arrastar') {
+          tx = gesto.tx0 + dx;
+          ty = gesto.ty0 + dy;
+          prender();
+          aplicar(false);
+        } else if (gesto.tipo === 'descer' && moveu) {
+          const desce = Math.max(0, dy);
+          ty = desce;
+          aplicar(false, ` scale(${1 - Math.min(desce / 1200, 0.15)})`);
+          fundo.style.opacity = String(Math.max(0.25, 1 - desce / 400));
+        }
+      });
+      const soltar = (e) => {
+        if (!pontos.has(e.pointerId)) return;
+        const ponto = pontos.get(e.pointerId);
+        pontos.delete(e.pointerId);
+        if (gesto && gesto.tipo === 'pinca') {
+          if (pontos.size === 1) {
+            const [resto] = Array.from(pontos.values());
+            gesto = { tipo: 'arrastar', x0: resto.x, y0: resto.y, tx0: tx, ty0: ty };
+          } else if (!pontos.size) {
+            if (s < 1.05) { s = 1; tx = 0; ty = 0; aplicar(true); }
+            gesto = null;
+          }
+          return;
+        }
+        if (pontos.size) return;
+        const tipo = gesto && gesto.tipo;
+        gesto = null;
+        if (tipo === 'descer' && moveu) {
+          if (ty > 110) { fechar(); return; }
+          ty = 0;
+          fundo.style.opacity = '';
+          aplicar(true);
+          return;
+        }
+        if (moveu || e.type === 'pointercancel') return;
+        const agora = performance.now();
+        if (agora - ultimoToque.t < 320 && distancia(ponto, ultimoToque) < 40) {
+          clearTimeout(timerToque);
+          ultimoToque = { t: 0, x: 0, y: 0 };
+          if (s > 1) { s = 1; tx = 0; ty = 0; } else zoomEm(2.5, relativo(ponto));
+          aplicar(true);
+          return;
+        }
+        ultimoToque = { t: agora, x: ponto.x, y: ponto.y };
+        if (s === 1 && !naImagem(ponto)) timerToque = setTimeout(fechar, 320);
+      };
+      palco.addEventListener('pointerup', soltar);
+      palco.addEventListener('pointercancel', soltar);
+      palco.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        zoomEm(s * Math.exp(-e.deltaY * 0.0025), relativo({ x: e.clientX, y: e.clientY }));
+        aplicar(false);
+      }, { passive: false });
+      for (const area of [topo, dica]) area.addEventListener('click', (e) => { if (e.target === area) fechar(); });
+      btnFechar.addEventListener('click', fechar);
+      document.addEventListener('keydown', teclado, true);
+      document.addEventListener('gesturestart', bloquear);
+      document.addEventListener('gesturechange', bloquear);
+
+      Visor.aberto = fechar;
+      document.body.append(visor);
+      btnFechar.focus({ preventScroll: true });
+
+      let fonte = foto || item.foto || null;
+      try {
+        if (!fonte && item.id) fonte = (await Fotos.completa(item.id)) || (await Fotos.miniatura(item.id));
+      } catch (e) {
+        fonte = null;
+      }
+      if (Visor.aberto !== fechar) return;
+      if (!fonte) {
+        carregando.textContent = 'Não foi possível abrir a foto. Feche e tente de novo.';
+        return;
+      }
+      img.src = fonte;
+      try { await img.decode(); } catch (e) { /* mostra mesmo assim */ }
+      if (Visor.aberto !== fechar) return;
+      img.hidden = false;
+      carregando.remove();
     },
   };
 
@@ -2110,12 +2830,15 @@ select.entrada {
       return { campo, valor: () => atual };
     },
 
-    campoFoto(inicial) {
+    // item: o Funko em edição (ou null). A foto atual pode estar dentro do item ou no IndexedDB.
+    campoFoto(item) {
       const SEM_IMAGEM = 'Não há imagem copiada. Copie uma foto e tente de novo.';
-      let foto = inicial;
+      let foto = (item && item.foto) || null;
+      let previa = foto;
+      let alterada = false;
       let ocupado = false;
 
-      const preview = el('div', { class: 'foto-preview' });
+      const preview = el('button', { type: 'button', class: 'foto-preview', 'aria-label': 'Ampliar foto' });
       const seletor = el('input', { type: 'file', accept: 'image/*', hidden: true, 'aria-hidden': 'true', tabindex: '-1' });
       const btnColar = el('button', { type: 'button', class: 'btn btn-secundario btn-foto' });
       const btnFototeca = el('button', { type: 'button', class: 'btn btn-secundario btn-foto' });
@@ -2127,13 +2850,21 @@ select.entrada {
       });
 
       const desenhar = () => {
-        preview.replaceChildren(foto ? el('img', { src: foto, alt: 'Foto do Funko' }) : Util.icone('camera'));
+        preview.replaceChildren(previa ? el('img', { src: previa, alt: '' }) : Util.icone('camera'));
+        preview.disabled = !previa;
         btnColar.replaceChildren(Util.icone('colar'), 'Colar foto');
         btnFototeca.replaceChildren(Util.icone('camera'), 'Escolher da fototeca');
         btnColar.disabled = false;
         btnFototeca.disabled = false;
-        btnRemover.hidden = !foto;
+        btnRemover.hidden = !previa;
       };
+      if (!foto && item && item.temFoto) {
+        Fotos.miniatura(item.id).then((mini) => {
+          if (alterada || !mini) return;
+          previa = mini;
+          desenhar();
+        }).catch(() => {});
+      }
 
       const mostrarArea = (mensagem) => {
         dica.textContent = mensagem;
@@ -2155,6 +2886,8 @@ select.entrada {
         btnFototeca.replaceChildren('Preparando foto…');
         try {
           foto = await Util.fotoParaJpeg(imagem);
+          previa = foto;
+          alterada = true;
           area.hidden = true;
           dica.hidden = true;
         } catch (e) {
@@ -2165,7 +2898,30 @@ select.entrada {
       };
 
       btnFototeca.addEventListener('click', () => seletor.click());
-      btnRemover.addEventListener('click', () => { foto = null; desenhar(); btnFototeca.focus(); });
+      preview.addEventListener('click', () => {
+        if (!previa) return;
+        const nomeAtual = document.getElementById('f-nome');
+        const numeroAtual = document.getElementById('f-numero');
+        const categoriaAtual = document.getElementById('f-categoria');
+        Visor.abrir({
+          item: {
+            id: item && !alterada ? item.id : null,
+            foto: alterada ? null : (item && item.foto) || null,
+            nome: (nomeAtual && nomeAtual.value.trim()) || (item && item.nome) || 'Nova foto',
+            numero: (numeroAtual && numeroAtual.value.trim()) || '',
+            categoria: (categoriaAtual && categoriaAtual.value) || (item && item.categoria) || 'Standard',
+          },
+          origem: preview,
+          foto: alterada ? foto : null,
+        });
+      });
+      btnRemover.addEventListener('click', () => {
+        foto = null;
+        previa = null;
+        alterada = true;
+        desenhar();
+        btnFototeca.focus();
+      });
       seletor.addEventListener('change', () => {
         const arquivo = seletor.files && seletor.files[0];
         seletor.value = '';
@@ -2220,7 +2976,7 @@ select.entrada {
       return {
         campo,
         seletor,
-        valor: () => foto,
+        valor: () => ({ alterada, foto }),
         ligar: () => document.addEventListener('paste', aoColar),
         desligar: () => document.removeEventListener('paste', aoColar),
       };
@@ -2379,6 +3135,63 @@ select.entrada {
       };
     },
 
+    campoLancamento(item) {
+      const id = 'f-lancamento';
+      const chave = el('input', { type: 'checkbox', id: `${id}-chave`, role: 'switch' });
+      chave.checked = Boolean(item && item.naoLancado);
+      const previsao = el('input', {
+        id, class: 'entrada', type: 'text', inputmode: 'numeric', placeholder: 'mm/aaaa', maxlength: 10,
+        autocomplete: 'off', value: (item && item.naoLancado && item.lancamento) || '',
+      });
+      const erro = el('p', { class: 'erro-campo', id: `${id}-erro`, hidden: true });
+      const ref = { input: previsao, erro };
+      const campoPrevisao = el('div', { class: 'campo', hidden: !chave.checked },
+        el('label', { for: id, text: 'Previsão de lançamento (opcional)' }), previsao, erro);
+
+      chave.addEventListener('change', () => {
+        campoPrevisao.hidden = !chave.checked;
+        Modais.marcarErro(ref, null);
+        if (chave.checked) previsao.focus();
+      });
+      // Digitando só números, monta mm/aaaa ou dd/mm/aaaa sozinho.
+      previsao.addEventListener('input', () => {
+        Modais.marcarErro(ref, null);
+        const digitos = previsao.value.replace(/\D/g, '');
+        if (/[^\d/]/.test(previsao.value) || !digitos) return;
+        let formatado = digitos;
+        if (digitos.length > 6) formatado = `${digitos.slice(0, 2)}/${digitos.slice(2, 4)}/${digitos.slice(4, 8)}`;
+        else if (digitos.length > 2) formatado = `${digitos.slice(0, 2)}/${digitos.slice(2)}`;
+        if (formatado !== previsao.value) previsao.value = formatado;
+      });
+
+      const campo = el('div', { class: 'lancamento' },
+        el('label', { class: 'chave', for: `${id}-chave` },
+          el('span', { class: 'chave-texto' },
+            el('span', { class: 'chave-titulo', text: 'Ainda não lançado' }),
+            el('span', { class: 'chave-dica', text: 'Para Funkos anunciados que ainda vão sair.' })),
+          chave,
+          el('span', { class: 'chave-trilho', 'aria-hidden': 'true' })),
+        campoPrevisao);
+
+      return {
+        campo,
+        // Devolve null quando a previsão está num formato que não dá para entender.
+        valor() {
+          if (!chave.checked) return { naoLancado: false, lancamento: '' };
+          const texto = previsao.value.trim();
+          const mesAno = /^(0[1-9]|1[0-2])\/\d{4}$/.test(texto);
+          const data = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(texto);
+          const dataValida = data && !Number.isNaN(new Date(`${data[3]}-${data[2]}-${data[1]}T12:00:00`).getTime())
+            && Number(data[2]) >= 1 && Number(data[2]) <= 12 && Number(data[1]) >= 1 && Number(data[1]) <= 31;
+          if (texto && !mesAno && !dataValida) {
+            Modais.marcarErro(ref, 'Use mês e ano, como 03/2027, ou a data completa, como 15/03/2027.');
+            return null;
+          }
+          return { naoLancado: true, lancamento: texto };
+        },
+      };
+    },
+
     marcarErro(ref, mensagem) {
       if (mensagem) {
         ref.erro.textContent = mensagem;
@@ -2422,9 +3235,10 @@ select.entrada {
       const pago = colecao ? Modais.campoValor({ id: 'f-pago', rotulo: 'Valor pago', valor: item && item.valorPago }) : null;
       const estimado = colecao ? Modais.campoValor({ id: 'f-estimado', rotulo: 'Valor estimado', valor: item && item.valorEstimado }) : null;
 
-      const campoFoto = Modais.campoFoto(item ? item.foto : null);
+      const campoFoto = Modais.campoFoto(item || null);
 
       const nota = colecao ? null : Modais.campoDesejo(item ? (item.desejo || null) : DESEJO_PADRAO);
+      const lancamento = colecao ? null : Modais.campoLancamento(item);
 
       const btnSalvar = el('button', { type: 'submit', class: 'btn btn-primario', text: editando ? 'Salvar alterações' : (colecao ? 'Salvar Funko' : 'Salvar na wishlist') });
       let folha;
@@ -2433,19 +3247,21 @@ select.entrada {
         el('div', { class: 'linha-2' }, numero.campo, campoCategoria),
         nome.campo,
         serie.campo,
-        colecao ? el('div', { class: 'linha-2' }, pago.campo, estimado.campo) : nota.campo,
+        colecao ? el('div', { class: 'linha-2' }, pago.campo, estimado.campo) : [nota.campo, lancamento.campo],
         el('div', { class: 'form-botoes' },
           el('button', { type: 'button', class: 'btn btn-secundario', text: 'Cancelar', on: { click: () => folha.fechar() } }),
           btnSalvar));
 
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (btnSalvar.disabled) return;
         const okNome = Modais.marcarErro(nome, nome.input.value.trim() ? null : 'Digite o nome do Funko.');
         const okCategoria = Modais.marcarErro(categoria, MAPA_CATEGORIAS.has(select.value) ? null : 'Escolha uma categoria.');
         const valorPago = colecao ? Modais.validarValor(pago) : null;
         const valorEstimado = colecao ? Modais.validarValor(estimado) : null;
         const okValores = !Number.isNaN(valorPago) && !Number.isNaN(valorEstimado);
-        if (!okNome || !okCategoria || !okValores) {
+        const dadosLancamento = colecao ? {} : lancamento.valor();
+        if (!okNome || !okCategoria || !okValores || !dadosLancamento) {
           const primeiroErro = form.querySelector('[aria-invalid="true"]');
           if (primeiroErro) primeiroErro.focus();
           return;
@@ -2455,14 +3271,16 @@ select.entrada {
           nome: nome.input.value.trim(),
           serie: serie.valor(),
           categoria: select.value,
-          foto: campoFoto.valor(),
           valorPago,
           valorEstimado,
           desejo: colecao ? null : nota.valor(),
+          ...dadosLancamento,
         };
+        btnSalvar.disabled = true;
         const ok = editando
-          ? Estado.atualizar(tipo, item.id, dados, serie.grupoNovo())
-          : Estado.adicionar(tipo, dados, serie.grupoNovo());
+          ? await Estado.atualizar(tipo, item.id, dados, serie.grupoNovo(), campoFoto.valor())
+          : await Estado.adicionar(tipo, dados, serie.grupoNovo(), campoFoto.valor());
+        btnSalvar.disabled = false;
         if (!ok) return;
         folha.fechar();
         Toast.ok(editando ? 'Alterações salvas' : (colecao ? 'Funko salvo na coleção' : 'Funko salvo na wishlist'));
@@ -2699,7 +3517,7 @@ select.entrada {
         confirmar: 'Excluir Funko',
         perigo: true,
       });
-      if (sim && Estado.excluir(tipo, item.id)) Toast.ok('Funko excluído');
+      if (sim && await Estado.excluir(tipo, item.id)) Toast.ok('Funko excluído');
     },
 
     moverParaColecao(id) {
@@ -2736,18 +3554,27 @@ select.entrada {
      BACKUP
      ======================================================= */
   const Backup = {
-    montarArquivo() {
-      const dados = {
-        app: 'funko-tracker',
-        versao: 2,
-        exportadoEm: new Date().toISOString(),
-        colecao: Estado.listas.colecao,
-        wishlist: Estado.listas.wishlist,
-        series: Estado.listas.series,
-      };
-      const nome = `funko-tracker-backup-${Util.hoje()}.json`;
-      const json = JSON.stringify(dados, null, 2);
-      return { nome, json };
+    // O arquivo leva as fotos dentro de cada Funko, lidas do IndexedDB. Monta em partes para não criar
+    // uma única string gigante na memória do iPhone.
+    async montarArquivo() {
+      const partes = [`{"app":"funko-tracker","versao":2,"exportadoEm":${JSON.stringify(new Date().toISOString())}`];
+      for (const tipo of TIPOS) {
+        const lista = Estado.listas[tipo];
+        partes.push(`,"${tipo}":[`);
+        for (let i = 0; i < lista.length; i += 20) {
+          const lote = lista.slice(i, i + 20);
+          const ids = Fotos.ativo ? lote.filter((x) => x.temFoto && !x.foto).map((x) => x.id) : [];
+          const fotos = ids.length ? await Fotos.lerVarias(ids) : new Map();
+          lote.forEach((item, j) => {
+            const { temFoto, ...resto } = item;
+            const foto = item.foto || (fotos.get(item.id) || {}).foto || null;
+            partes.push(`${i + j ? ',' : ''}${JSON.stringify({ ...resto, foto })}`);
+          });
+        }
+        partes.push(']');
+      }
+      partes.push(`,"series":${JSON.stringify(Estado.listas.series)}}`);
+      return { nome: `funko-tracker-backup-${Util.hoje()}.json`, partes };
     },
 
     registrar() {
@@ -2756,8 +3583,8 @@ select.entrada {
       Toast.ok('Backup exportado');
     },
 
-    baixar(nome, json) {
-      const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+    baixar(nome, partes) {
+      const url = URL.createObjectURL(new Blob(partes, { type: 'application/json' }));
       const link = el('a', { href: url, download: nome, hidden: true });
       document.body.append(link);
       link.click();
@@ -2765,10 +3592,26 @@ select.entrada {
       setTimeout(() => URL.revokeObjectURL(url), 4000);
     },
 
-    async exportar() {
-      const { nome, json } = Backup.montarArquivo();
+    async exportar(evento) {
+      const botao = evento && evento.currentTarget;
+      const textoOriginal = botao ? Array.from(botao.childNodes) : null;
+      if (botao) { botao.disabled = true; botao.replaceChildren('Preparando backup…'); }
+      let arquivo;
+      try {
+        arquivo = await Backup.montarArquivo();
+      } catch (e) {
+        Toast.erro('Não foi possível ler as fotos para o backup. Feche e abra o app e tente de novo.');
+        return;
+      } finally {
+        if (botao && botao.isConnected) { botao.disabled = false; botao.replaceChildren(...textoOriginal); }
+      }
+      await Backup.entregar(arquivo, false);
+    },
+
+    // Share Sheet quando der; se o Safari pedir um toque novo (a leitura das fotos demorou), oferece um botão.
+    async entregar({ nome, partes }, depoisDeToque) {
       let arquivo = null;
-      try { arquivo = new File([json], nome, { type: 'application/json' }); } catch (e) { arquivo = null; }
+      try { arquivo = new File(partes, nome, { type: 'application/json' }); } catch (e) { arquivo = null; }
       if (arquivo && navigator.canShare && navigator.share && navigator.canShare({ files: [arquivo] })) {
         try {
           await navigator.share({ files: [arquivo], title: 'Backup do Funko Tracker' });
@@ -2776,14 +3619,35 @@ select.entrada {
           return;
         } catch (e) {
           if (e && e.name === 'AbortError') return;
+          if (e && e.name === 'NotAllowedError' && !depoisDeToque) {
+            Backup.oferecer({ nome, partes }, arquivo.size);
+            return;
+          }
         }
       }
       try {
-        Backup.baixar(nome, json);
+        Backup.baixar(nome, partes);
         Backup.registrar();
       } catch (e) {
         Toast.erro('Não foi possível gerar o arquivo. Tente de novo pelo Safari.');
       }
+    },
+
+    oferecer(arquivo, tamanho) {
+      let folha;
+      folha = Folha.abrir({
+        rotulo: 'Backup pronto',
+        conteudo: [
+          el('h2', { text: 'Backup pronto' }),
+          el('p', { class: 'folha-texto', text: `O arquivo tem ${Util.formatarBytes(tamanho)}. Toque para escolher onde salvar.` }),
+          el('div', { class: 'form-botoes' },
+            el('button', { type: 'button', class: 'btn btn-secundario', text: 'Cancelar', on: { click: () => folha.fechar() } }),
+            el('button', {
+              type: 'button', class: 'btn btn-primario', text: 'Compartilhar backup', 'data-foco-inicial': true,
+              on: { click: () => { folha.fechar(true); Backup.entregar(arquivo, true); } },
+            })),
+        ],
+      });
     },
 
     escolherArquivo() {
@@ -2813,7 +3677,7 @@ select.entrada {
       }
       const brutoC = Array.isArray(dados.colecao) ? dados.colecao : [];
       const brutoW = Array.isArray(dados.wishlist) ? dados.wishlist : [];
-      const { colecao, wishlist } = Storage.normalizarListas(brutoC, brutoW);
+      const { colecao, wishlist } = Storage.normalizarListas(brutoC, brutoW, false);
       const ignorados = brutoC.length + brutoW.length - colecao.length - wishlist.length;
       const brutasS = versao === 2 && Array.isArray(dados.series) ? dados.series : [];
       const registradas = Storage.normalizarSeries(brutasS);
@@ -2838,7 +3702,10 @@ select.entrada {
         confirmar: 'Substituir dados',
         perigo: atuais > 0,
       });
-      if (sim && Estado.substituirTudo(colecao, wishlist, series)) Toast.ok('Backup importado');
+      if (!sim) return;
+      const nFotos = [...colecao, ...wishlist].filter((i) => i.foto).length;
+      if (nFotos > 10) Toast.ok(`Importando ${nFotos} fotos…`);
+      if (await Estado.substituirTudo(colecao, wishlist, series)) Toast.ok('Backup importado');
     },
   };
 
@@ -2901,7 +3768,10 @@ select.entrada {
         const card = e.target.closest('.pop');
         if (!card) return;
         const id = card.dataset.id;
-        if (e.target.closest('.pop-mais')) Modais.acoes(tipo, id);
+        if (e.target.closest('.pop-ver')) {
+          const item = Estado.buscar(tipo, id);
+          if (item) Visor.abrir({ item, origem: e.target.closest('.pop-ver') });
+        } else if (e.target.closest('.pop-mais')) Modais.acoes(tipo, id);
         else if (e.target.closest('.pop-corpo')) {
           const item = Estado.buscar(tipo, id);
           if (item) Modais.formulario(tipo, item);
@@ -2937,6 +3807,20 @@ select.entrada {
   /* =======================================================
      INICIALIZAÇÃO
      ======================================================= */
+  async function prepararFotos() {
+    const ok = await Fotos.abrir();
+    if (!ok) {
+      Toast.erro('Este navegador não liberou o banco de fotos. As fotos ficam no armazenamento antigo, que comporta cerca de 5 MB.');
+      return;
+    }
+    Fotos.pedirPersistencia();
+    try {
+      if (await Fotos.migrar()) Render.tudo();
+    } catch (e) {
+      /* as fotos continuam no localStorage e o app segue funcionando */
+    }
+  }
+
   function iniciar() {
     Render.montar();
     const { colecao, wishlist, series, gravarSeries } = Storage.carregarTudo();
@@ -2949,6 +3833,7 @@ select.entrada {
     if (!Storage.disponivel()) {
       Toast.erro('O navegador bloqueou o armazenamento. Saia da navegação privada para salvar seus Funkos.');
     }
+    prepararFotos();
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js').catch(() => { /* o app segue funcionando online */ });
