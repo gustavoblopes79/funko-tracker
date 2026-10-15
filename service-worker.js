@@ -1,7 +1,7 @@
 'use strict';
 
 // Ao publicar uma nova versão do app, incremente o número (funko-v2, funko-v3...).
-const CACHE_NAME = 'funko-v5';
+const CACHE_NAME = 'funko-v6';
 
 const ARQUIVOS = [
   './',
