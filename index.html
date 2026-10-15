@@ -227,26 +227,15 @@ img { display: block; max-width: 100%; }
 }
 .chip[aria-pressed="true"] .chip-ponto { background: var(--on-accent); }
 
-.ordenacao {
-  display: inline-flex;
-  margin: -2px var(--gutter-r) 14px var(--gutter-l);
-  padding: 3px;
-  border-radius: 14px;
-  background: var(--surface);
-  border: 1px solid var(--linha);
+.ordenar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: -2px;
+  padding: 0 var(--gutter-r) 14px var(--gutter-l);
 }
-.ordenacao button {
-  min-height: 44px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 11px;
-  background: none;
-  color: var(--muted);
-  font-size: 15px;
-  font-weight: 600;
-}
-.ordenacao button[aria-pressed="true"] { background: var(--card); color: var(--text); }
-.ordenacao button:focus-visible { outline-offset: -2px; }
+.ordenar label { flex: none; color: var(--muted); font-size: 15px; font-weight: 600; }
+.ordenar .filtro-select { flex: 0 1 auto; min-width: 0; max-width: 100%; }
 
 .filtros-extra {
   display: flex;
@@ -598,6 +587,9 @@ img { display: block; max-width: 100%; }
 .bloco-rodape .bloco-texto { margin: 0; }
 .bloco-nota { margin: 14px 0 0; color: var(--muted); font-size: 15px; }
 .bloco .espaco-usado { margin: 0 0 14px; }
+.extrato-wishlist dd { color: var(--text); }
+.pop-preco { grid-template-columns: 1fr; gap: 0; }
+.pop-preco dd { text-align: left; font-size: 15px; }
 
 /* =========================================================
    FOLHAS (bottom sheet e action sheet)
@@ -1096,6 +1088,10 @@ button.foto-preview:disabled { opacity: 1; }
   const BANCO_FOTOS = 'funko-tracker-fotos';
   const TOQUE_LONGO_MS = 500;
   const DESEJO_PADRAO = 3;
+  const ORDENS = {
+    colecao: [['recentes', 'Mais recentes']],
+    wishlist: [['recentes', 'Mais recentes'], ['desejo', 'Maior desejo'], ['estimadoAsc', 'Menor preço'], ['estimadoDesc', 'Maior preço']],
+  };
   const SERIE_MAX = 120;
   const GRUPO_PADRAO = 'Outros';
   const GRUPOS = [
@@ -1455,7 +1451,7 @@ button.foto-preview:disabled { opacity: 1; }
         foto,
         temFoto: Boolean(foto) || (confiarTemFoto && bruto.temFoto === true),
         valorPago: tipo === 'colecao' ? Storage.numero(bruto.valorPago) : null,
-        valorEstimado: tipo === 'colecao' ? Storage.numero(bruto.valorEstimado) : null,
+        valorEstimado: Storage.numero(bruto.valorEstimado),
         desejo: tipo === 'wishlist' ? Storage.desejo(bruto.desejo) : null,
         ...(tipo === 'wishlist' ? Storage.lancamento(bruto) : {}),
         dataCriacao: Number.isNaN(data.getTime()) ? new Date().toISOString() : data.toISOString(),
@@ -1788,7 +1784,7 @@ button.foto-preview:disabled { opacity: 1; }
     aba: 'colecao',
     listas: { colecao: [], wishlist: [], series: [] },
     filtros: {
-      colecao: { busca: '', categoria: null, grupo: null, serie: null, agrupar: false },
+      colecao: { busca: '', categoria: null, grupo: null, serie: null, agrupar: false, ordem: 'recentes' },
       wishlist: { busca: '', categoria: null, grupo: null, serie: null, agrupar: false, ordem: 'recentes', lancamento: null },
     },
     dashTodasSeries: false,
@@ -1867,7 +1863,7 @@ button.foto-preview:disabled { opacity: 1; }
         ...dados,
         serie,
         valorPago: tipo === 'colecao' ? dados.valorPago : null,
-        valorEstimado: tipo === 'colecao' ? dados.valorEstimado : null,
+        valorEstimado: dados.valorEstimado,
         desejo: tipo === 'wishlist' ? dados.desejo : null,
         dataCriacao: new Date().toISOString(),
         tipo,
@@ -1906,7 +1902,7 @@ button.foto-preview:disabled { opacity: 1; }
         ...resto,
         tipo: para,
         valorPago: para === 'colecao' ? valores.valorPago : null,
-        valorEstimado: para === 'colecao' ? valores.valorEstimado : null,
+        valorEstimado: para === 'colecao' ? valores.valorEstimado : item.valorEstimado,
         desejo: null,
         ...(para === 'wishlist' ? { naoLancado: false, lancamento: '' } : {}),
       };
@@ -1970,18 +1966,35 @@ button.foto-preview:disabled { opacity: 1; }
       return Estado.persistirComFotos(novas, fotos);
     },
 
+    // Itens sem o valor usado na ordenação vão para o fim; empate fica com o mais recente primeiro.
+    ordenador(ordem) {
+      const porData = (a, b) => (a.dataCriacao < b.dataCriacao ? 1 : a.dataCriacao > b.dataCriacao ? -1 : 0);
+      if (ordem === 'desejo') return (a, b) => (b.desejo || 0) - (a.desejo || 0) || porData(a, b);
+      const porValor = {
+        pagoAsc: ['valorPago', 1], pagoDesc: ['valorPago', -1],
+        estimadoAsc: ['valorEstimado', 1], estimadoDesc: ['valorEstimado', -1],
+      }[ordem];
+      if (!porValor) return porData;
+      const [campo, sentido] = porValor;
+      return (a, b) => {
+        const semA = typeof a[campo] !== 'number';
+        const semB = typeof b[campo] !== 'number';
+        if (semA !== semB) return semA ? 1 : -1;
+        if (!semA && a[campo] !== b[campo]) return (a[campo] - b[campo]) * sentido;
+        return porData(a, b);
+      };
+    },
+
     visiveis(tipo) {
       const { busca, categoria, grupo, serie, ordem, lancamento } = Estado.filtros[tipo];
       const termo = Util.normalizarBusca(busca);
-      const porData = (a, b) => (a.dataCriacao < b.dataCriacao ? 1 : a.dataCriacao > b.dataCriacao ? -1 : 0);
-      const porDesejo = (a, b) => (b.desejo || 0) - (a.desejo || 0) || porData(a, b);
       return Estado.listas[tipo]
         .filter((i) => !categoria || i.categoria === categoria)
         .filter((i) => !lancamento || (lancamento === 'nao' ? i.naoLancado === true : i.naoLancado !== true))
         .filter((i) => !grupo || (Util.chaveSerie(i.serie) && Series.grupoDe(i.serie) === grupo))
         .filter((i) => !serie || Util.chaveSerie(i.serie) === serie)
         .filter((i) => !termo || [i.nome, i.serie, i.numero].some((c) => Util.normalizarBusca(c).includes(termo)))
-        .sort(ordem === 'desejo' ? porDesejo : porData);
+        .sort(Estado.ordenador(ordem));
     },
   };
 
@@ -2083,17 +2096,16 @@ button.foto-preview:disabled { opacity: 1; }
       }, chipsLancamento, selGrupo, selSerie, btnAgrupar, btnLimpar);
 
       const barra = el('div', { class: 'barra-busca' }, el('div', { class: 'campo-busca' }, Util.icone('busca'), busca));
-      const criarOrdem = (valor, texto) => el('button', {
-        type: 'button', 'aria-pressed': 'false', dataset: { ordem: valor },
-        on: { click: () => { Estado.filtros[tipo].ordem = valor; Render.lista(tipo); } },
-      }, texto);
-      const ordenacao = tipo === 'wishlist'
-        ? el('div', { class: 'ordenacao', role: 'group', 'aria-label': 'Ordenar wishlist' },
-          criarOrdem('recentes', 'Mais recentes'), criarOrdem('desejo', 'Maior desejo'))
+      const selOrdem = el('select', {
+        id: `ordem-${tipo}`, class: 'filtro-select',
+        on: { change: (e) => { Estado.filtros[tipo].ordem = e.target.value; Render.lista(tipo); } },
+      }, ORDENS[tipo].map(([valor, texto]) => el('option', { value: valor, text: texto })));
+      const ordenacao = ORDENS[tipo].length > 1
+        ? el('div', { class: 'ordenar' }, el('label', { for: `ordem-${tipo}`, text: 'Ordenar por' }), selOrdem)
         : null;
       Util.anexar(painel, [barra, chips, filtrosExtra, ordenacao, grade, vazio]);
       Interacoes.ligarCards(grade, tipo);
-      return { barra, busca, chips, filtrosExtra, chipsLancamento, selGrupo, selSerie, btnAgrupar, btnLimpar, ordenacao, grade, vazio };
+      return { barra, busca, chips, filtrosExtra, chipsLancamento, selGrupo, selSerie, btnAgrupar, btnLimpar, ordenacao, selOrdem, grade, vazio };
     },
 
     tudo() {
@@ -2132,9 +2144,8 @@ button.foto-preview:disabled { opacity: 1; }
       refs.chips.hidden = !temItens;
       if (refs.ordenacao) {
         refs.ordenacao.hidden = !temItens;
-        for (const botao of refs.ordenacao.children) {
-          botao.setAttribute('aria-pressed', String(botao.dataset.ordem === filtro.ordem));
-        }
+        refs.selOrdem.value = filtro.ordem;
+        refs.selOrdem.classList.toggle('ativo', filtro.ordem !== 'recentes');
       }
 
       const temSeries = Render.filtrosDeSerie(tipo, refs);
@@ -2328,6 +2339,9 @@ button.foto-preview:disabled { opacity: 1; }
           el('dt', { text: 'Pago' }), el('dd', { text: Util.formatarMoeda(item.valorPago) }),
           el('dt', { text: 'Estimado' }), el('dd', { text: Util.formatarMoeda(item.valorEstimado) }),
         ) : null,
+        tipo === 'wishlist' && typeof item.valorEstimado === 'number' ? el('dl', { class: 'pop-valores pop-preco' },
+          el('dt', { text: 'Preço estimado' }), el('dd', { text: Util.moeda.format(item.valorEstimado) }),
+        ) : null,
       );
 
       const rotulo = [item.numero ? `Número ${item.numero}` : '', item.nome].filter(Boolean).join(', ');
@@ -2371,6 +2385,23 @@ button.foto-preview:disabled { opacity: 1; }
             }, `${positiva ? '▲' : '▼'} ${Util.moedaComSinal.format(diferenca)}`)),
         ),
       );
+
+      const comPreco = wishlist.filter((i) => typeof i.valorEstimado === 'number');
+      const semPreco = wishlist.length - comPreco.length;
+      const somaWishlist = comPreco.reduce((s, i) => s + i.valorEstimado, 0);
+      const extratoWishlist = wishlist.length ? el('section', { class: 'extrato extrato-wishlist', 'aria-labelledby': 'titulo-wishlist-valor' },
+        el('h2', { id: 'titulo-wishlist-valor', text: 'Quanto falta' }),
+        comPreco.length
+          ? el('dl', null, el('dt', { text: 'Para completar a wishlist' }), el('dd', { text: Util.moeda.format(somaWishlist) }))
+          : null,
+        el('p', {
+          class: comPreco.length ? 'bloco-nota' : 'bloco-texto',
+          text: !comPreco.length
+            ? 'Nenhum Funko da wishlist tem preço ainda. Edite um item da wishlist e preencha o Preço estimado para ver quanto falta.'
+            : semPreco
+              ? `${Util.plural(semPreco, 'item ainda está', 'itens ainda estão')} sem preço e ${semPreco === 1 ? 'fica' : 'ficam'} fora da soma.`
+              : `Soma dos preços estimados de ${Util.plural(comPreco.length, 'Funko', 'Funkos')}.`,
+        })) : null;
 
       const porCategoria = new Map();
       for (const i of colecao) porCategoria.set(i.categoria, (porCategoria.get(i.categoria) || 0) + 1);
@@ -2448,7 +2479,7 @@ button.foto-preview:disabled { opacity: 1; }
           el('button', { type: 'button', class: 'btn btn-secundario btn-largo', on: { click: Backup.escolherArquivo } }, Util.icone('importar'), 'Importar backup')),
       );
 
-      dom.dashboard.replaceChildren(contagens, extrato, categorias, grupos, series, backup);
+      dom.dashboard.replaceChildren(...[contagens, extrato, extratoWishlist, categorias, grupos, series, backup].filter(Boolean));
       Render.espacoUsado(backup.querySelector('.espaco-usado'));
     },
 
@@ -3233,7 +3264,7 @@ button.foto-preview:disabled { opacity: 1; }
         select, categoria.erro);
 
       const pago = colecao ? Modais.campoValor({ id: 'f-pago', rotulo: 'Valor pago', valor: item && item.valorPago }) : null;
-      const estimado = colecao ? Modais.campoValor({ id: 'f-estimado', rotulo: 'Valor estimado', valor: item && item.valorEstimado }) : null;
+      const estimado = Modais.campoValor({ id: 'f-estimado', rotulo: colecao ? 'Valor estimado' : 'Preço estimado', valor: item && item.valorEstimado });
 
       const campoFoto = Modais.campoFoto(item || null);
 
@@ -3247,7 +3278,7 @@ button.foto-preview:disabled { opacity: 1; }
         el('div', { class: 'linha-2' }, numero.campo, campoCategoria),
         nome.campo,
         serie.campo,
-        colecao ? el('div', { class: 'linha-2' }, pago.campo, estimado.campo) : [nota.campo, lancamento.campo],
+        colecao ? el('div', { class: 'linha-2' }, pago.campo, estimado.campo) : [estimado.campo, nota.campo, lancamento.campo],
         el('div', { class: 'form-botoes' },
           el('button', { type: 'button', class: 'btn btn-secundario', text: 'Cancelar', on: { click: () => folha.fechar() } }),
           btnSalvar));
@@ -3258,7 +3289,7 @@ button.foto-preview:disabled { opacity: 1; }
         const okNome = Modais.marcarErro(nome, nome.input.value.trim() ? null : 'Digite o nome do Funko.');
         const okCategoria = Modais.marcarErro(categoria, MAPA_CATEGORIAS.has(select.value) ? null : 'Escolha uma categoria.');
         const valorPago = colecao ? Modais.validarValor(pago) : null;
-        const valorEstimado = colecao ? Modais.validarValor(estimado) : null;
+        const valorEstimado = Modais.validarValor(estimado);
         const okValores = !Number.isNaN(valorPago) && !Number.isNaN(valorEstimado);
         const dadosLancamento = colecao ? {} : lancamento.valor();
         if (!okNome || !okCategoria || !okValores || !dadosLancamento) {
@@ -3524,12 +3555,15 @@ button.foto-preview:disabled { opacity: 1; }
       const item = Estado.buscar('wishlist', id);
       if (!item) return;
       const pago = Modais.campoValor({ id: 'm-pago', rotulo: 'Valor pago', valor: null });
-      const estimado = Modais.campoValor({ id: 'm-estimado', rotulo: 'Valor estimado', valor: null });
+      const estimado = Modais.campoValor({ id: 'm-estimado', rotulo: 'Valor estimado', valor: item.valorEstimado });
       pago.input.setAttribute('data-foco-inicial', '');
       for (const ref of [pago, estimado]) ref.input.addEventListener('input', () => Modais.marcarErro(ref, null));
       let folha;
       const form = el('form', { class: 'form', novalidate: true },
-        el('p', { class: 'folha-texto', text: `Quanto você pagou por ${item.nome}? Deixe em branco se não souber.` }),
+        el('p', {
+          class: 'folha-texto',
+          text: `Quanto você pagou por ${item.nome}? Deixe em branco se não souber.${typeof item.valorEstimado === 'number' ? ' O valor estimado veio da wishlist; ajuste se mudou.' : ''}`,
+        }),
         el('div', { class: 'linha-2' }, pago.campo, estimado.campo),
         el('div', { class: 'form-botoes' },
           el('button', { type: 'button', class: 'btn btn-secundario', text: 'Cancelar', on: { click: () => folha.fechar() } }),
