@@ -1080,6 +1080,7 @@ button.foto-preview:disabled { opacity: 1; }
   const MAPA_CATEGORIAS = new Map(CATEGORIAS.map((c) => [c.nome, c]));
   const CHAVES = { colecao: 'funko_colecao', wishlist: 'funko_wishlist', series: 'funko_series' };
   const CHAVE_ULTIMO_BACKUP = 'funko_ultimo_backup';
+  const CHAVE_ORDEM = 'funko_ordem';
   const TIPOS = ['colecao', 'wishlist'];
   const FOTO_LADO_MAX = 1200;
   const FOTO_QUALIDADE = 0.8;
@@ -1089,7 +1090,10 @@ button.foto-preview:disabled { opacity: 1; }
   const TOQUE_LONGO_MS = 500;
   const DESEJO_PADRAO = 3;
   const ORDENS = {
-    colecao: [['recentes', 'Mais recentes']],
+    colecao: [
+      ['recentes', 'Mais recentes'], ['pagoAsc', 'Menor preço pago'], ['pagoDesc', 'Maior preço pago'],
+      ['estimadoAsc', 'Menor valor estimado'], ['estimadoDesc', 'Maior valor estimado'],
+    ],
     wishlist: [['recentes', 'Mais recentes'], ['desejo', 'Maior desejo'], ['estimadoAsc', 'Menor preço'], ['estimadoDesc', 'Maior preço']],
   };
   const SERIE_MAX = 120;
@@ -1794,6 +1798,19 @@ button.foto-preview:disabled { opacity: 1; }
       return Boolean(f.busca.trim() || f.categoria || f.grupo || f.serie || f.lancamento);
     },
 
+    // A ordenação escolhida em cada lista fica guardada no aparelho.
+    carregarOrdens() {
+      let salvas = {};
+      try { salvas = JSON.parse(Storage.lerTexto(CHAVE_ORDEM) || '{}') || {}; } catch (e) { salvas = {}; }
+      for (const tipo of TIPOS) {
+        if (ORDENS[tipo].some(([valor]) => valor === salvas[tipo])) Estado.filtros[tipo].ordem = salvas[tipo];
+      }
+    },
+
+    salvarOrdens() {
+      Storage.gravarTexto(CHAVE_ORDEM, JSON.stringify({ colecao: Estado.filtros.colecao.ordem, wishlist: Estado.filtros.wishlist.ordem }));
+    },
+
     limparFiltros(tipo) {
       Object.assign(Estado.filtros[tipo], { busca: '', categoria: null, grupo: null, serie: null });
       if (tipo === 'wishlist') Estado.filtros.wishlist.lancamento = null;
@@ -2098,7 +2115,7 @@ button.foto-preview:disabled { opacity: 1; }
       const barra = el('div', { class: 'barra-busca' }, el('div', { class: 'campo-busca' }, Util.icone('busca'), busca));
       const selOrdem = el('select', {
         id: `ordem-${tipo}`, class: 'filtro-select',
-        on: { change: (e) => { Estado.filtros[tipo].ordem = e.target.value; Render.lista(tipo); } },
+        on: { change: (e) => { Estado.filtros[tipo].ordem = e.target.value; Estado.salvarOrdens(); Render.lista(tipo); } },
       }, ORDENS[tipo].map(([valor, texto]) => el('option', { value: valor, text: texto })));
       const ordenacao = ORDENS[tipo].length > 1
         ? el('div', { class: 'ordenar' }, el('label', { for: `ordem-${tipo}`, text: 'Ordenar por' }), selOrdem)
@@ -3862,6 +3879,7 @@ button.foto-preview:disabled { opacity: 1; }
     Estado.listas.wishlist = wishlist;
     Estado.listas.series = series;
     if (gravarSeries) Storage.gravar(CHAVES.series, series);
+    Estado.carregarOrdens();
     Interacoes.ligar();
     Render.tudo();
     if (!Storage.disponivel()) {
